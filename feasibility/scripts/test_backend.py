@@ -1,6 +1,12 @@
 import sys
+import os
 import pytest
 from fastapi.testclient import TestClient
+
+# Imposta DB temporaneo per i test
+os.environ["DB_FILE"] = "test_sensordata.db"
+os.environ["USE_MQTT"] = "0"  # Disattiva MQTT durante i test
+
 from backend import app
 
 client = TestClient(app)
@@ -51,7 +57,7 @@ def test_post_data_missing_fields():
     incomplete_data = {
         "temperature": 25.0,
         "humidity": 40.0,
-        # luminosity is missing here
+        # manca luminosity
         "gps": {"lat": 45.0, "lon": 9.0},
         "signature": "dummy_signature"
     }
@@ -59,15 +65,26 @@ def test_post_data_missing_fields():
     assert response.status_code == 422  # Unprocessable Entity
 
 def test_get_data_empty():
-    response = client.get("/data")
+    # Pulisci database temporaneo prima del test
+    if os.path.exists("test_sensordata.db"):
+        os.remove("test_sensordata.db")
+
+    # Rilancia l'app affinché crei il DB pulito
+    from importlib import reload
+    import scripts.backend
+    reload(scripts.backend)
+
+    new_client = TestClient(scripts.backend.app)
+    response = new_client.get("/data")
     assert response.status_code == 200
     json_data = response.json()
     assert "data" in json_data
     assert isinstance(json_data["data"], list)
+    assert len(json_data["data"]) == 0
 
 if __name__ == "__main__":
-    # Esegue pytest sul file stesso (o su tutta la cartella, se vuoi)
-    result = pytest.main(["-q", "--disable-warnings"])
+    print("\n▶ Avvio test suite...\n")
+    result = pytest.main(["-q", "--disable-warnings", __file__])
 
     if result == 0:
         print("\n✅ Tutti i test sono passati con successo!")
