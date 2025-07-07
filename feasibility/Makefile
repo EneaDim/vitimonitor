@@ -19,7 +19,7 @@ CONFIG_FILE := config.yml
 TEST_FILE := $(SRC_DIR)/test_backend.py
 PYTEST := $(VENV_DIR)/bin/pytest
 
-.PHONY: help run firmware curlroot curlgetdata curlstatus lint test clean cleandb frontend init venv freeze gen-config
+.PHONY: help run-all firmware curlroot curlgetdata curlstatus lint test clean cleandb frontend init venv freeze gen-config
 
 help:
 	@echo ""
