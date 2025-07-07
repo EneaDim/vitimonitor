@@ -1,0 +1,13 @@
+[theme]
+primaryColor = "#6C63FF"         # Viola elegante
+backgroundColor = "#1E1E1E"      # Scuro neutro
+secondaryBackgroundColor = "#2E2E2E"
+textColor = "#FFFFFF"
+font = "sans serif"
+
+[server]
+headless = true
+
+[client]
+showSidebarNavigation = true
+

@@ -1,0 +1,15 @@
+backend_url: http://localhost:8000/data
+use_mqtt: false
+mqtt_broker: localhost
+mqtt_port: 1883
+mqtt_topic: sensor/data
+
+sensors_per_zone: 2
+send_interval: 5
+zones: [zone_north, zone_south, zone_east, zone_west]
+
+soglie:
+  temperature: [0, 40]
+  humidity: [10, 90]
+  luminosity: [0, 100000]
+
