@@ -1,52 +1,110 @@
 # ========= Variabili =========
-PYTHON := .venv/bin/python
-UVICORN := .venv/bin/uvicorn
-STREAMLIT := .venv/bin/streamlit
+VENV_DIR := .venv
+PYTHON := $(VENV_DIR)/bin/python
+UVICORN := $(VENV_DIR)/bin/uvicorn
+STREAMLIT := $(VENV_DIR)/bin/streamlit
 APP := scripts.backend:app
 HOST := 0.0.0.0
 PORT := 8000
 COLOR := \033[38;5;214m
 RESET := \033[0m
 ECHO := @echo "$(COLOR)▶$(RESET)"
+ORANGE := \033[38;5;208m
+NC := \033[0m
 
 # ======== Configurazione ========
 SRC_DIR := scripts
 DB_FILE := sensordata.db
-USE_MQTT ?= 1
-MQTT_BROKER := localhost
-MQTT_PORT := 1883
-MQTT_TOPIC := sensor/data
+CONFIG_FILE := config.yml
 TEST_FILE := $(SRC_DIR)/test_backend.py
-PYTEST := .venv/bin/pytest
+PYTEST := $(VENV_DIR)/bin/pytest
 
-.PHONY: help run firmware curlroot curlgetdata curlstatus lint test clean cleandb frontend
+.PHONY: help run firmware curlroot curlgetdata curlstatus lint test clean cleandb frontend init venv freeze gen-config
 
 help:
 	@echo ""
-	@echo "$(COLOR)Available commands:$(RESET)"
-	@echo "  $(COLOR)make run$(RESET)          - Avvia il backend FastAPI con Uvicorn"
-	@echo "  $(COLOR)make firmware$(RESET)     - Avvia il firmware mock (con POST o MQTT)"
-	@echo "  $(COLOR)make frontend$(RESET)     - Avvia il frontend Streamlit"
-	@echo "  $(COLOR)make curlroot$(RESET)     - Chiamata curl a / (root)"
-	@echo "  $(COLOR)make curlgetdata$(RESET)  - Chiamata curl GET a /data"
-	@echo "  $(COLOR)make curlstatus$(RESET)   - Chiamata curl GET a /status"
-	@echo "  $(COLOR)make lint$(RESET)         - Linting del codice Python con flake8"
-	@echo "  $(COLOR)make test$(RESET)         - Esegue i test automatici"
-	@echo "  $(COLOR)make clean$(RESET)        - Rimuove file temporanei e cache"
-	@echo "  $(COLOR)make cleandb$(RESET)      - Elimina il file del database SQLite"
+	@echo "$(COLOR)Comandi disponibili:$(RESET)"
+	@echo ""
+	@echo "$(COLOR)⚙️  Setup & Ambiente:$(RESET)"
+	@echo "  $(COLOR)make init$(RESET)             - Crea venv, installa pacchetti, setup cartelle e config.yml"
+	@echo "  $(COLOR)make venv$(RESET)             - Mostra comando per attivare l’ambiente virtuale"
+	@echo "  $(COLOR)make freeze$(RESET)           - Aggiorna requirements.txt"
+	@echo ""
+	@echo "$(COLOR)🚀 Avvio servizi:$(RESET)"
+	@echo "  $(COLOR)make backend$(RESET)          - Avvia il backend FastAPI con Uvicorn"
+	@echo "  $(COLOR)make firmware$(RESET)         - Avvia il firmware mock (legge config.yml)"
+	@echo "  $(COLOR)make frontend$(RESET)         - Avvia il frontend Streamlit"
+	@echo "  $(COLOR)make run-all$(RESET)          - Avvia backend, firmware e frontend in tmux"
+	@echo ""
+	@echo "$(COLOR)🧰 Debug & Test:$(RESET)"
+	@echo "  $(COLOR)make lint$(RESET)             - Linting del codice Python con flake8"
+	@echo "  $(COLOR)make test$(RESET)             - Esegue i test automatici"
+	@echo "  $(COLOR)make curlroot$(RESET)         - Chiamata curl a / (root)"
+	@echo "  $(COLOR)make curlgetdata$(RESET)      - Chiamata curl GET a /data"
+	@echo "  $(COLOR)make curlstatus$(RESET)       - Chiamata curl GET a /status"
+	@echo ""
+	@echo "$(COLOR)📝 Configurazione:$(RESET)"
+	@echo "  $(COLOR)make show-config$(RESET)      - Mostra il contenuto corrente di config.yml"
+	@echo "  $(COLOR)make update-config$(RESET)    - Aggiorna un valore in config.yml (es. KEY=send_interval VALUE=2)"
+	@echo ""
+	@echo "$(COLOR)🧹 Pulizia:$(RESET)"
+	@echo "  $(COLOR)make clean$(RESET)            - Rimuove file temporanei e cache"
+	@echo "  $(COLOR)make cleandb$(RESET)          - Elimina il file del database SQLite"
 	@echo ""
 
-tutorial:
-	$(ECHO) Avvio frontend Streamlit...
-	$(STREAMLIT) run $(SRC_DIR)/tutorial.py
+init:
+	@echo "$(ORANGE)🔧 Inizializzazione progetto...$(NC)"
+	@if [ ! -d $(VENV_DIR) ]; then \
+		echo "$(ORANGE)📦 Creo ambiente virtuale $(VENV_DIR)$(NC)"; \
+		python3 -m venv $(VENV_DIR); \
+	fi
+	@echo "$(ORANGE)📥 Attivo $(VENV_DIR) e installo dipendenze$(NC)"
+	@. $(VENV_DIR)/bin/activate && pip install --upgrade pip && pip install -r requirements.txt
+	@mkdir -p data scripts && touch scripts/__init__.py
+	@$(MAKE) gen-config
+	@echo "$(ORANGE)✅ Setup completato$(NC)"
 
-run:
+venv:
+	@echo "$(ORANGE)✨ Attiva ambiente virtuale con:$(NC)"
+	@echo "source $(VENV_DIR)/bin/activate"
+
+freeze:
+	@echo "$(ORANGE)📦 Aggiorno requirements.txt$(NC)"
+	@. $(VENV_DIR)/bin/activate && pip freeze > requirements.txt
+
+run-all:
+	$(ECHO) Avvio tutti i servizi in sessione tmux...
+	@tmux new-session -d -s app-backend 'make backend'
+	@tmux split-window -h -t app-backend 'sleep 3 && make firmware'
+	@tmux split-window -v -t app-backend 'make frontend'
+	@tmux select-layout -t app-backend tiled
+	@tmux attach -t app-backend
+
+show-config:
+	$(ECHO) Contenuto configurazione attuale:
+	@cat $(CONFIG_FILE) | sed 's/^/    /'
+
+update-config:
+ifndef KEY
+	$(error Devi specificare KEY=nome_chiave e VALUE=valore, es: make update-config KEY=send_interval VALUE=10)
+endif
+ifndef VALUE
+	$(error Devi specificare VALUE=valore, es: make update-config KEY=send_interval VALUE=10)
+endif
+	$(ECHO) Aggiorno $(CONFIG_FILE): $(KEY) -> $(VALUE)
+	@$(PYTHON) -c "import yaml; \
+	with open('$(CONFIG_FILE)') as f: cfg=yaml.safe_load(f); \
+	cfg['$(KEY)']='$(VALUE)'; \
+	yaml.dump(cfg,open('$(CONFIG_FILE)','w'))"
+	$(ECHO) Configurazione aggiornata: $(KEY)=$(VALUE)
+
+backend:
 	$(ECHO) Avvio FastAPI backend...
-	USE_MQTT=$(USE_MQTT) DB_FILE=$(DB_FILE) $(UVICORN) $(APP) --reload --host $(HOST) --port $(PORT)
+	DB_FILE=$(DB_FILE) $(UVICORN) $(APP) --reload --host $(HOST) --port $(PORT)
 
 firmware:
-	$(ECHO) Avvio firmware mock POST o MQTT...
-	USE_MQTT=$(USE_MQTT) MQTT_BROKER=$(MQTT_BROKER) MQTT_PORT=$(MQTT_PORT) MQTT_TOPIC=$(MQTT_TOPIC) $(PYTHON) $(SRC_DIR)/firmware_mock.py
+	$(ECHO) Avvio firmware mock...
+	$(PYTHON) $(SRC_DIR)/firmware_mock.py --config $(CONFIG_FILE)
 
 frontend:
 	$(ECHO) Avvio frontend Streamlit...
