@@ -8,7 +8,7 @@ import time as t
 
 # --- CONFIG APP ---
 st.set_page_config(
-    page_title="SensorCompare Dashboard",
+    page_title="VitiMonitor Dashboard",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -52,7 +52,6 @@ def check_thresholds(df, metric):
 
 # --- SIDEBAR ---
 st.sidebar.title("⚙️ Configurazione")
-backend_url = st.sidebar.text_input("🌐 URL Backend API", value="http://localhost:8000")
 
 if 'dark_mode' not in st.session_state:
     st.session_state.dark_mode = True
@@ -60,14 +59,7 @@ if 'dark_mode' not in st.session_state:
 dark_mode = st.sidebar.toggle("🌙 Modalità scura", value=st.session_state.dark_mode)
 st.session_state.dark_mode = dark_mode
 
-st.sidebar.markdown("---")
-st.sidebar.subheader("🔄 Polling dati")
-
-enable_polling = st.sidebar.checkbox("Abilita polling automatico", value=True)
-polling_interval = st.sidebar.selectbox("Frequenza (s)", POLLING_OPTIONS, index=0)
-
-if st.sidebar.button("📥 Aggiorna manualmente"):
-    st.rerun()
+backend_url = "http://localhost:8000"
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("🎛️ Filtri dati")
@@ -78,12 +70,7 @@ orario_inizio, orario_fine = st.sidebar.columns(2)
 start_time = orario_inizio.time_input("Orario inizio", value=time(0,0))
 end_time = orario_fine.time_input("Orario fine", value=time(23,59))
 
-selected_metrics = st.sidebar.multiselect("Metriche da visualizzare", METRICHE, default=METRICHE)
-lat_range = st.sidebar.slider("Latitudine", -90.0, 90.0, (-90.0, 90.0), step=0.1)
-lon_range = st.sidebar.slider("Longitudine", -180.0, 180.0, (-180.0, 180.0), step=0.1)
-
-# --- MAIN ---
-st.title("📊 SensorCompare Dashboard")
+st.title("📊 VitiMonitor Dashboard")
 st.caption("Analisi comparativa dei sensori")
 
 data = fetch_sensor_data(backend_url)
@@ -95,6 +82,25 @@ if df.empty:
 
 sensori_disponibili = sorted(df['sensor_id'].unique())
 selected_sensors = st.sidebar.multiselect("Sensori da visualizzare", options=sensori_disponibili, default=sensori_disponibili)
+st.sidebar.markdown("---")
+selected_metrics = st.sidebar.multiselect("Metriche da visualizzare", METRICHE, default=METRICHE)
+lat_range = st.sidebar.slider("Latitudine", -90.0, 90.0, (-90.0, 90.0), step=0.1)
+lon_range = st.sidebar.slider("Longitudine", -180.0, 180.0, (-180.0, 180.0), step=0.1)
+
+st.sidebar.markdown("---")
+st.sidebar.subheader("🔄 Polling dati")
+
+enable_polling = st.sidebar.checkbox("Abilita polling automatico", value=True)
+polling_interval = st.sidebar.selectbox("Frequenza (s)", POLLING_OPTIONS, index=0)
+
+if st.sidebar.button("📥 Aggiorna manualmente"):
+    st.rerun()
+
+st.sidebar.markdown("---")
+
+backend_url_side = st.sidebar.text_input("🌐 URL Backend API", value=backend_url)
+
+# --- MAIN ---
 
 start_dt = datetime.combine(date_range[0], start_time)
 end_dt = datetime.combine(date_range[1], end_time)
@@ -153,8 +159,25 @@ with tabs[0]:
 # --- Mappa GPS ---
 with tabs[1]:
     st.subheader("🗺️ Posizioni GPS")
-    if df_filtered[['lat', 'lon']].dropna().shape[0] > 0:
-        st.map(df_filtered[['lat', 'lon']].dropna())
+    import pydeck as pdk
+    df_gps = df_filtered[['lat', 'lon']].dropna()
+    if not df_gps.empty:
+        midpoint = (df_gps['lat'].mean(), df_gps['lon'].mean())
+        layer = pdk.Layer(
+            "ScatterplotLayer",
+            data=df_gps,
+            get_position='[lon, lat]',
+            get_color='[200, 30, 0, 160]',
+            get_radius=50,  # puoi ridurre qui, es. 10-50
+            pickable=True,
+        )
+        view_state = pdk.ViewState(
+            latitude=midpoint[0],
+            longitude=midpoint[1],
+            zoom=12,
+            pitch=0,
+        )
+        st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state))
     else:
         st.info("Nessun dato GPS disponibile")
 
@@ -217,5 +240,5 @@ with tabs[3]:
             st.text_area("📝 Annotazioni sulle operazioni")
 # --- Footer ---
 st.markdown("---")
-st.caption(f"SensorCompare © 2025 — Modalità: 🌙 Scura" if dark_mode else "SensorCompare © 2025 — Modalità: ☀️ Chiara")
+st.caption(f"VitiMonitor © 2025 — Modalità: 🌙 Scura" if dark_mode else "VitiMonitor © 2025 — Modalità: ☀️ Chiara")
 
