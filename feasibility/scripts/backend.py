@@ -9,10 +9,6 @@ import threading
 import json
 import paho.mqtt.client as mqtt
 
-## ==== Load Environment =====
-#from dotenv import load_dotenv
-#load_dotenv()
-
 # ========== Parametri da ambiente ==========
 USE_MQTT = os.getenv("USE_MQTT", "0") == "1"
 DB_FILE = os.getenv("DB_FILE", "sensordata.db")
@@ -23,12 +19,18 @@ MQTT_TOPIC = os.getenv("MQTT_TOPIC", "sensor/data")
 # ========== Inizializzazione App ==========
 app = FastAPI()
 
-# ========== Modello dati ==========
+# ========== Modelli dati ==========
+class GPSModel(BaseModel):
+    lat: float
+    lon: float
+
 class SensorData(BaseModel):
+    sensor_id: str
+    zone: str
     temperature: float
     humidity: float
     luminosity: float
-    gps: Dict[str, float]
+    gps: GPSModel
     signature: str
 
 # ========== Connessione al database ==========
@@ -36,6 +38,8 @@ conn = sqlite3.connect(DB_FILE, check_same_thread=False)
 c = conn.cursor()
 c.execute('''
     CREATE TABLE IF NOT EXISTS sensor_data (
+        sensor_id TEXT,
+        zone TEXT,
         temperature REAL,
         humidity REAL,
         luminosity REAL,
@@ -49,19 +53,22 @@ conn.commit()
 
 # ========== Verifica della firma (mock) ==========
 def verify_signature(data: dict) -> bool:
-    return data.get('signature') == 'dummy_signature'
+    # Firma dummy per demo
+    return data.get('signature', '').startswith('signature_')
 
 # ========== Inserimento nel DB ==========
 def save_to_db(sensor_data: SensorData):
     c.execute('''
-        INSERT INTO sensor_data (temperature, humidity, luminosity, lat, lon, signature)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO sensor_data (sensor_id, zone, temperature, humidity, luminosity, lat, lon, signature)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
+        sensor_data.sensor_id,
+        sensor_data.zone,
         sensor_data.temperature,
         sensor_data.humidity,
         sensor_data.luminosity,
-        sensor_data.gps['lat'],
-        sensor_data.gps['lon'],
+        sensor_data.gps.lat,
+        sensor_data.gps.lon,
         sensor_data.signature
     ))
     conn.commit()
@@ -73,7 +80,7 @@ def on_message(client, userdata, msg):
         sensor_data = SensorData(**payload)
         if verify_signature(payload):
             save_to_db(sensor_data)
-            print(f"✅ MQTT: Dati salvati da topic '{msg.topic}'")
+            print(f"✅ MQTT: Dati salvati da topic '{msg.topic}' ({sensor_data.sensor_id})")
         else:
             print("⚠️  MQTT: Firma non valida.")
     except Exception as e:
@@ -105,16 +112,21 @@ async def receive_data(sensor_data: SensorData):
 
 @app.get("/data")
 async def get_all_data():
-    c.execute("SELECT temperature, humidity, luminosity, lat, lon, signature, timestamp FROM sensor_data ORDER BY timestamp DESC")
+    c.execute('''
+        SELECT sensor_id, zone, temperature, humidity, luminosity, lat, lon, signature, timestamp
+        FROM sensor_data ORDER BY timestamp DESC
+    ''')
     rows = c.fetchall()
     result = [
         {
-            "temperature": r[0],
-            "humidity": r[1],
-            "luminosity": r[2],
-            "gps": {"lat": r[3], "lon": r[4]},
-            "signature": r[5],
-            "timestamp": r[6]
+            "sensor_id": r[0],
+            "zone": r[1],
+            "temperature": r[2],
+            "humidity": r[3],
+            "luminosity": r[4],
+            "gps": {"lat": r[5], "lon": r[6]},
+            "signature": r[7],
+            "timestamp": r[8]
         } for r in rows
     ]
     return {"data": result}

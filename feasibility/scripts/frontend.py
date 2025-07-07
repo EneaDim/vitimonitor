@@ -1,184 +1,221 @@
 import streamlit as st
-import requests
 import pandas as pd
-from datetime import datetime, date
+import requests
+from datetime import datetime, time
+import plotly.express as px
 from streamlit_autorefresh import st_autorefresh
+import time as t
 
-# --- CONFIGURAZIONE INIZIALE ---
+# --- CONFIG APP ---
+st.set_page_config(
+    page_title="SensorCompare Dashboard",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# Frequenze di polling disponibili (in secondi)
-POLLING_OPTIONS = [0, 5, 10, 30, 60]  # 0 = polling disabilitato
+# --- COSTANTI ---
+POLLING_OPTIONS = [5, 10, 30, 60]
+METRICHE = ['temperature', 'humidity', 'luminosity']
+SOGLIE = {
+    'temperature': (0, 40),
+    'humidity': (10, 90),
+    'luminosity': (0, 100000)
+}
 
-# --- FUNZIONI UTILI ---
-
+# --- FUNZIONI ---
 def fetch_sensor_data(backend_url):
-    """
-    Richiama il backend all'endpoint /data e ritorna i dati in forma di lista di dizionari.
-    """
     try:
-        response = requests.get(f"{backend_url}/data")
+        response = requests.get(f"{backend_url}/data", timeout=5)
         response.raise_for_status()
-        json_data = response.json()
-        return json_data.get("data", [])
+        return response.json().get("data", [])
     except requests.RequestException as e:
-        st.error(f"Errore nel fetch dei dati: {e}")
+        st.error(f"❌ Errore nel fetch dei dati: {e}")
         return []
 
 def data_to_dataframe(data):
-    """
-    Converte la lista di dizionari in un DataFrame pandas, utile per tabelle e grafici.
-    Gestisce anche la conversione timestamp in datetime.
-    """
     if not data:
         return pd.DataFrame()
     df = pd.DataFrame(data)
-    # Espandi gps in colonne lat, lon
     df['lat'] = df['gps'].apply(lambda g: g.get('lat') if g else None)
     df['lon'] = df['gps'].apply(lambda g: g.get('lon') if g else None)
-    # Converti timestamp in datetime (se presente)
     if 'timestamp' in df.columns:
         df['timestamp'] = pd.to_datetime(df['timestamp'])
     return df
 
-def filter_dataframe(df, date_range, selected_types, lat_range, lon_range):
-    """
-    Filtra il dataframe per data, tipo dato e coordinate GPS.
-    """
-    if df.empty:
-        return df
-    
-    # Filtro data (timestamp)
-    if date_range:
-        start_date, end_date = date_range
-        df = df[(df['timestamp'] >= pd.Timestamp(start_date)) & (df['timestamp'] <= pd.Timestamp(end_date) + pd.Timedelta(days=1))]
-    
-    # Filtro tipo dato (temperature, humidity, luminosity)
-    # Il filtro riguarda cosa visualizzare, quindi si userà nel frontend (grafici e tabella)
-    # Qui non si filtra il df, lo lasciamo intero per mostrare tutto in tabella.
-    # Però potresti voler filtrare qui se vuoi.
+def export_csv(df):
+    return df.to_csv(index=False).encode("utf-8")
 
-    # Filtro GPS
-    if lat_range:
-        lat_min, lat_max = lat_range
-        df = df[(df['lat'] >= lat_min) & (df['lat'] <= lat_max)]
-    if lon_range:
-        lon_min, lon_max = lon_range
-        df = df[(df['lon'] >= lon_min) & (df['lon'] <= lon_max)]
-    
-    return df
+def check_thresholds(df, metric):
+    min_val, max_val = SOGLIE[metric]
+    return df[(df[metric] < min_val) | (df[metric] > max_val)]
 
-def display_data_table(df, selected_types):
-    """
-    Mostra una tabella con i dati sensoriali, nasconde la firma completa.
-    Mostra solo i tipi selezionati.
-    """
-    if df.empty:
-        st.info("Nessun dato disponibile al momento.")
-        return
+# --- SIDEBAR ---
+st.sidebar.title("⚙️ Configurazione")
+backend_url = st.sidebar.text_input("🌐 URL Backend API", value="http://localhost:8000")
 
-    cols = ['timestamp', 'lat', 'lon', 'signature'] + selected_types
-    # signature accorciata
-    df_display = df[cols].copy()
-    df_display['signature'] = df_display['signature'].apply(lambda s: s[:8] + '...' if s else '')
+if 'dark_mode' not in st.session_state:
+    st.session_state.dark_mode = True
 
-    st.dataframe(df_display)
+dark_mode = st.sidebar.toggle("🌙 Modalità scura", value=st.session_state.dark_mode)
+st.session_state.dark_mode = dark_mode
 
-def display_charts(df, selected_types):
-    """
-    Visualizza grafici delle metriche selezionate nel tempo.
-    """
-    if df.empty:
-        return
+st.sidebar.markdown("---")
+st.sidebar.subheader("🔄 Polling dati")
 
-    st.subheader("Andamento dei sensori nel tempo")
+enable_polling = st.sidebar.checkbox("Abilita polling automatico", value=True)
+polling_interval = st.sidebar.selectbox("Frequenza (s)", POLLING_OPTIONS, index=0)
 
-    for metric in selected_types:
-        if metric in df.columns:
-            st.markdown(f"### {metric.capitalize()}")
-            st.line_chart(df.set_index('timestamp')[metric])
+if st.sidebar.button("📥 Aggiorna manualmente"):
+    st.rerun()
 
-# --- STREAMLIT UI ---
+st.sidebar.markdown("---")
+st.sidebar.subheader("🎛️ Filtri dati")
 
-st.title("Dashboard Sensori Vitivinicoli")
+today = datetime.today().date()
+date_range = st.sidebar.date_input("Intervallo date", value=(today, today))
+orario_inizio, orario_fine = st.sidebar.columns(2)
+start_time = orario_inizio.time_input("Orario inizio", value=time(0,0))
+end_time = orario_fine.time_input("Orario fine", value=time(23,59))
 
-# Input backend URL
-backend_url = st.sidebar.text_input("URL Backend API", value="http://localhost:8000")
+selected_metrics = st.sidebar.multiselect("Metriche da visualizzare", METRICHE, default=METRICHE)
+lat_range = st.sidebar.slider("Latitudine", -90.0, 90.0, (-90.0, 90.0), step=0.1)
+lon_range = st.sidebar.slider("Longitudine", -180.0, 180.0, (-180.0, 180.0), step=0.1)
 
-# Sidebar per controlli utente
-st.sidebar.header("Configurazione Polling")
-
-# Imposta valori di default sessione per polling se non esistono
-if 'polling_interval' not in st.session_state:
-    st.session_state.polling_interval = 5  # default 5s
-if 'polling_enabled' not in st.session_state:
-    st.session_state.polling_enabled = True
-
-# Toggle abilitazione polling
-polling_enabled = st.sidebar.checkbox("Abilita polling automatico", value=st.session_state.polling_enabled)
-st.session_state.polling_enabled = polling_enabled
-
-# Se polling abilitato, seleziona frequenza
-polling_interval = 0
-if polling_enabled:
-    polling_interval = st.sidebar.selectbox(
-        "Frequenza polling (secondi)",
-        POLLING_OPTIONS[1:],  # escludi 0
-        index=POLLING_OPTIONS[1:].index(st.session_state.polling_interval) if st.session_state.polling_interval in POLLING_OPTIONS else 0
-    )
-else:
-    polling_interval = 0  # polling off
-
-st.session_state.polling_interval = polling_interval
-
-# Pulsante manuale di refresh
-if st.sidebar.button("Aggiorna dati manualmente"):
-    st.experimental_rerun()
-
-# --- Filtri dati ---
-
-st.sidebar.header("Filtri dati")
-
-# Filtro data range (default ultimi 7 giorni)
-min_date = datetime(2000, 1, 1)
-max_date = datetime.now()
-date_range = st.sidebar.date_input("Intervallo date", value=(max_date.date() - pd.Timedelta(days=7), max_date.date()), min_value=min_date.date(), max_value=max_date.date())
-
-# Seleziona tipo dato da mostrare
-tipo_dati_possibili = ['temperature', 'humidity', 'luminosity']
-selected_types = st.sidebar.multiselect("Tipi di dato da visualizzare", options=tipo_dati_possibili, default=tipo_dati_possibili)
-
-# Filtro GPS: range latitudine e longitudine
-# Per semplicità prendiamo range ampi di default
-lat_min, lat_max = st.sidebar.slider("Intervallo latitudine", -90.0, 90.0, (-90.0, 90.0), step=0.1)
-lon_min, lon_max = st.sidebar.slider("Intervallo longitudine", -180.0, 180.0, (-180.0, 180.0), step=0.1)
-
-# --- Fetch dati e UI ---
-
-# Polling automatico con st_autorefresh
-if polling_enabled and polling_interval > 0:
-    st_autorefresh(interval=polling_interval * 1000, key="polling")
+# --- MAIN ---
+st.title("📊 SensorCompare Dashboard")
+st.caption("Analisi comparativa dei sensori")
 
 data = fetch_sensor_data(backend_url)
 df = data_to_dataframe(data)
 
-# Applica filtri
-df_filtered = filter_dataframe(df, date_range, selected_types, (lat_min, lat_max), (lon_min, lon_max))
+if df.empty:
+    st.warning("Nessun dato ricevuto dal backend.")
+    st.stop()
 
-# Mostra info ultimo timestamp
+sensori_disponibili = sorted(df['sensor_id'].unique())
+selected_sensors = st.sidebar.multiselect("Sensori da visualizzare", options=sensori_disponibili, default=sensori_disponibili)
+
+start_dt = datetime.combine(date_range[0], start_time)
+end_dt = datetime.combine(date_range[1], end_time)
+
+df_filtered = df[
+    (df['timestamp'] >= start_dt) &
+    (df['timestamp'] <= end_dt) &
+    df['lat'].between(*lat_range) &
+    df['lon'].between(*lon_range) &
+    df['sensor_id'].isin(selected_sensors)
+]
+
 if not df_filtered.empty:
-    last_time = df_filtered['timestamp'].max()
-    st.write(f"Dati aggiornati all'ultimo timestamp: **{last_time}**")
+    st.success(f"Ultimo aggiornamento: **{df_filtered['timestamp'].max()}**")
 else:
-    st.write("Nessun dato disponibile.")
+    st.info("Nessun dato disponibile con i filtri selezionati.")
 
-# Tabella
-display_data_table(df_filtered, selected_types)
+# --- TABS ---
+tab_labels = [
+    "📊 Confronto grafico",
+    "🗺️ Mappa GPS",
+    "🧾 Tabella dati",
+    "🔬 Fusion & Culture Planner"
+]
+tabs = st.tabs(tab_labels)
 
-# Grafici
-display_charts(df_filtered, selected_types)
+if "active_tab" not in st.session_state:
+    st.session_state.active_tab = tab_labels[0]
 
-# Mappa GPS
-if not df_filtered.empty and df_filtered[['lat', 'lon']].dropna().shape[0] > 0:
-    st.subheader("Posizione GPS dei dati raccolti")
-    st.map(df_filtered[['lat', 'lon']].dropna())
+for idx, tab in enumerate(tabs):
+    with tab:
+        st.session_state.active_tab = tab_labels[idx]
+
+if enable_polling and st.session_state.active_tab != "🔬 Fusion & Culture Planner":
+    st_autorefresh(interval=polling_interval * 1000, key="polling_enabled")
+
+# --- Confronto grafico ---
+with tabs[0]:
+    st.subheader("📊 Confronto fra sensori (grafici interattivi)")
+    for metric in selected_metrics:
+        df_metric = df_filtered[['timestamp', 'sensor_id', metric, 'zone']].dropna()
+        fig = px.line(df_metric, x="timestamp", y=metric, color="sensor_id", title=f"{metric.capitalize()} per sensore", markers=True)
+        st.plotly_chart(fig, use_container_width=True)
+
+        alerts = check_thresholds(df_metric, metric)
+        if not alerts.empty:
+            st.error(f"⚠️ {len(alerts)} valori fuori soglia per {metric}:")
+            alerts_display = alerts[['sensor_id', 'zone', 'timestamp', metric]].sort_values('timestamp').copy()
+            alerts_display.columns = ["Sensore", "Zona", "Timestamp", metric]
+            alerts_display["Vai"] = [
+                f"[🔍 Vai](?sensor_id={row['Sensore']}&timestamp={row['Timestamp']})"
+                for _, row in alerts_display.iterrows()
+            ]
+            st.dataframe(alerts_display, height=300, use_container_width=True)
+
+# --- Mappa GPS ---
+with tabs[1]:
+    st.subheader("🗺️ Posizioni GPS")
+    if df_filtered[['lat', 'lon']].dropna().shape[0] > 0:
+        st.map(df_filtered[['lat', 'lon']].dropna())
+    else:
+        st.info("Nessun dato GPS disponibile")
+
+# --- Tabella dati ---
+with tabs[2]:
+    st.subheader("🧾 Dati tabellari")
+    if not df_filtered.empty:
+        df_display = df_filtered[['timestamp', 'sensor_id', 'lat', 'lon', 'signature'] + selected_metrics].copy()
+        df_display['signature'] = df_display['signature'].apply(lambda s: s[:8] + '...' if s else '')
+        st.dataframe(df_display, use_container_width=True)
+
+        csv = export_csv(df_display)
+        st.download_button("📤 Esporta dati CSV", data=csv, file_name=f"sensor_data_{datetime.now().date()}.csv", mime="text/csv")
+    else:
+        st.info("Nessun dato disponibile per la tabella")
+
+# --- Fusion Analysis ---
+with tabs[3]:
+    st.subheader("🔬 Fusion Analysis & Culture Operations")
+
+    fonte_dati = st.radio("📥 Seleziona la fonte dei dati", ["Carica file CSV/Excel", "Usa dati raccolti dal database"])
+    threshold = st.slider("📊 Soglia di fusion score", 0.0, 1.0, 0.5)
+    factors = st.multiselect("🎛️ Fattori da includere", METRICHE, default=METRICHE)
+
+    df_fusion = None
+    if fonte_dati == "Carica file CSV/Excel":
+        uploaded_file = st.file_uploader("📁 Carica dataset di fusion", type=["csv", "xlsx"])
+        if uploaded_file:
+            df_fusion = pd.read_csv(uploaded_file) if uploaded_file.name.endswith(".csv") else pd.read_excel(uploaded_file)
+            st.dataframe(df_fusion.head(), use_container_width=True)
+    else:
+        df_fusion = df_filtered.copy()
+        st.dataframe(df_fusion.head(), use_container_width=True)
+
+
+    recommendations = pd.DataFrame()  # inizializza vuoto
+    if df_fusion is not None and factors:
+        st.markdown("### ⚖️ Assegna pesi ai fattori")
+        pesi = {factor: st.slider(f"Peso per {factor}", 0.0, 1.0, 1.0/len(factors), 0.05) for factor in factors}
+        if st.button("🧪 Esegui analisi"):
+            with st.spinner("Calcolo fusion score…"):
+                colonne_valide = []
+                for factor in factors:
+                    if factor in df_fusion.columns:
+                        min_val, max_val = SOGLIE[factor]
+                        df_fusion[f"norm_{factor}"] = df_fusion[factor].clip(min_val, max_val)
+                        df_fusion[f"norm_{factor}"] = (df_fusion[f"norm_{factor}"] - min_val) / (max_val - min_val)
+                        colonne_valide.append(factor)
+                somma_pesi = sum(pesi[f] for f in colonne_valide)
+                pesi_norm = {f: pesi[f]/somma_pesi for f in colonne_valide}
+                df_fusion["fusion_score"] = sum(
+                    df_fusion[f"norm_{f}"] * pesi_norm[f] for f in colonne_valide
+                )
+                recommendations = df_fusion[df_fusion["fusion_score"] > threshold]
+                st.markdown(f"### 🔷 Raccomandazioni: {len(recommendations)} colture sopra soglia")
+            if not recommendations.empty:
+                st.dataframe(recommendations, use_container_width=True)
+            else:
+                st.info("Nessuna coltura sopra la soglia.")
+            st.text_area("📝 Annotazioni sulle operazioni")
+# --- Footer ---
+st.markdown("---")
+st.caption(f"SensorCompare © 2025 — Modalità: 🌙 Scura" if dark_mode else "SensorCompare © 2025 — Modalità: ☀️ Chiara")
 
