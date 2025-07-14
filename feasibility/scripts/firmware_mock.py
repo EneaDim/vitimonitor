@@ -8,7 +8,7 @@ from sensor_mock import SensorMock
 import paho.mqtt.client as mqtt
 from colorama import Fore, Style, init
 
-init(autoreset=True)  # per colorama
+init(autoreset=True)
 
 class FirmwareMock:
     def __init__(self, config):
@@ -16,7 +16,6 @@ class FirmwareMock:
 
         self.backend_url = config.get("backend_url", "http://localhost:8000/data")
 
-        # MQTT
         self.use_mqtt = config.get("use_mqtt", False)
         self.mqtt_broker = config.get("mqtt_broker", "localhost")
         self.mqtt_port = config.get("mqtt_port", 1883)
@@ -38,7 +37,6 @@ class FirmwareMock:
                 print(f"{Fore.RED}⚠️ Errore connessione MQTT: {e}")
                 self.use_mqtt = False
 
-        # crea sensori
         self.sensors = []
         for zone in self.zones:
             for i in range(1, self.sensors_per_zone + 1):
@@ -57,8 +55,8 @@ class FirmwareMock:
 
     def send_data(self, data):
         anomalies = []
-        for metric in ["temperature", "humidity", "luminosity"]:
-            if self.check_anomaly(metric, data[metric]):
+        for metric in ["temperature", "humidity_air", "humidity_soil", "luminosity"]:
+            if self.check_anomaly(metric, data.get(metric)):
                 anomalies.append(metric)
 
         if self.use_mqtt:
@@ -79,7 +77,8 @@ class FirmwareMock:
                     'sensor_id': sensor.sensor_id,
                     'zone': sensor.zone,
                     'temperature': sensor.read_temperature(),
-                    'humidity': sensor.read_humidity(),
+                    'humidity_air': sensor.read_humidity_air(),
+                    'humidity_soil': sensor.read_humidity_soil(),
                     'luminosity': sensor.read_luminosity(),
                     'gps': sensor.read_gps(),
                     'timestamp': sensor.timestamp()
@@ -88,14 +87,12 @@ class FirmwareMock:
                 self.send_data(data)
             time.sleep(self.send_interval)
 
-
 def load_config(path):
     if not os.path.exists(path):
         print(f"{Fore.YELLOW}⚠️ Config file '{path}' non trovato. Uso configurazione di default.")
         return {}
     with open(path, 'r') as f:
         return yaml.safe_load(f)
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Firmware Mock - Sensori multipli")

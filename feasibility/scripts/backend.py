@@ -1,25 +1,24 @@
 # scripts/backend.py
-# ====== Import =======
+
 import os
 import sqlite3
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import Dict, List
+from typing import Dict
 import threading
 import json
 import paho.mqtt.client as mqtt
 
-# ========== Parametri da ambiente ==========
+# ========== Parametri ==========
 USE_MQTT = os.getenv("USE_MQTT", "0") == "1"
 DB_FILE = os.getenv("DB_FILE", "sensordata.db")
 MQTT_BROKER = os.getenv("MQTT_BROKER", "localhost")
 MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
 MQTT_TOPIC = os.getenv("MQTT_TOPIC", "sensor/data")
 
-# ========== Inizializzazione App ==========
 app = FastAPI()
 
-# ========== Modelli dati ==========
+# ========== Modelli ==========
 class GPSModel(BaseModel):
     lat: float
     lon: float
@@ -28,63 +27,68 @@ class SensorData(BaseModel):
     sensor_id: str
     zone: str
     temperature: float
-    humidity: float
+    humidity_air: float
+    humidity_soil: float
     luminosity: float
     gps: GPSModel
     signature: str
 
-# ========== Connessione al database ==========
+# ========== DB ==========
 conn = sqlite3.connect(DB_FILE, check_same_thread=False)
 c = conn.cursor()
 c.execute('''
-    CREATE TABLE IF NOT EXISTS sensor_data (
-        sensor_id TEXT,
-        zone TEXT,
-        temperature REAL,
-        humidity REAL,
-        luminosity REAL,
-        lat REAL,
-        lon REAL,
-        signature TEXT,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
+CREATE TABLE IF NOT EXISTS sensor_data (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sensor_id TEXT,
+    zone TEXT,
+    temperature REAL,
+    humidity_air REAL,
+    humidity_soil REAL,
+    luminosity REAL,
+    lat REAL,
+    lon REAL,
+    signature TEXT,
+    manual BOOLEAN DEFAULT 0,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+)
 ''')
 conn.commit()
 
-# ========== Verifica della firma (mock) ==========
+# ========== Firma mock ==========
 def verify_signature(data: dict) -> bool:
-    # Firma dummy per demo
     return data.get('signature', '').startswith('signature_')
 
-# ========== Inserimento nel DB ==========
-def save_to_db(sensor_data: SensorData):
+# ========== Salvataggio ==========
+def save_to_db(sensor_data: SensorData, manual: bool = False):
     c.execute('''
-        INSERT INTO sensor_data (sensor_id, zone, temperature, humidity, luminosity, lat, lon, signature)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO sensor_data (sensor_id, zone, temperature, humidity_air, humidity_soil, luminosity, lat, lon, signature, manual)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         sensor_data.sensor_id,
         sensor_data.zone,
         sensor_data.temperature,
-        sensor_data.humidity,
+        sensor_data.humidity_air,
+        sensor_data.humidity_soil,
         sensor_data.luminosity,
         sensor_data.gps.lat,
         sensor_data.gps.lon,
-        sensor_data.signature
+        sensor_data.signature,
+        manual
     ))
     conn.commit()
 
-# ========== MQTT Listener ==========
+# ========== MQTT ==========
 def on_message(client, userdata, msg):
     try:
         payload = json.loads(msg.payload.decode())
         sensor_data = SensorData(**payload)
         if verify_signature(payload):
             save_to_db(sensor_data)
-            print(f"✅ MQTT: Dati salvati da topic '{msg.topic}' ({sensor_data.sensor_id})")
+            print(f"✅ MQTT: Salvato {sensor_data.sensor_id}")
         else:
             print("⚠️  MQTT: Firma non valida.")
     except Exception as e:
-        print(f"❌ MQTT: Errore nel parsing: {e}")
+        print(f"❌ MQTT: Errore: {e}")
 
 def start_mqtt_listener():
     client = mqtt.Client()
@@ -96,12 +100,12 @@ def start_mqtt_listener():
 if USE_MQTT:
     thread = threading.Thread(target=start_mqtt_listener, daemon=True)
     thread.start()
-    print(f"📡 MQTT attivo: ascolto su {MQTT_BROKER}:{MQTT_PORT} topic '{MQTT_TOPIC}'")
+    print(f"📡 MQTT su {MQTT_BROKER}:{MQTT_PORT} topic '{MQTT_TOPIC}'")
 
-# ========== Endpoint FastAPI ==========
+# ========== API ==========
 @app.get("/")
 async def root():
-    return {"message": "Backend attivo!"}
+    return {"message": "Backend attivo"}
 
 @app.post("/data")
 async def receive_data(sensor_data: SensorData):
@@ -113,8 +117,8 @@ async def receive_data(sensor_data: SensorData):
 @app.get("/data")
 async def get_all_data():
     c.execute('''
-        SELECT sensor_id, zone, temperature, humidity, luminosity, lat, lon, signature, timestamp
-        FROM sensor_data ORDER BY timestamp DESC
+    SELECT sensor_id, zone, temperature, humidity_air, humidity_soil, luminosity, lat, lon, signature, manual, timestamp
+    FROM sensor_data ORDER BY timestamp DESC
     ''')
     rows = c.fetchall()
     result = [
@@ -122,21 +126,26 @@ async def get_all_data():
             "sensor_id": r[0],
             "zone": r[1],
             "temperature": r[2],
-            "humidity": r[3],
-            "luminosity": r[4],
-            "gps": {"lat": r[5], "lon": r[6]},
-            "signature": r[7],
-            "timestamp": r[8]
+            "humidity_air": r[3],
+            "humidity_soil": r[4],
+            "luminosity": r[5],
+            "gps": {"lat": r[6], "lon": r[7]},
+            "signature": r[8],
+            "manual": bool(r[9]),
+            "timestamp": r[10]
         } for r in rows
     ]
     return {"data": result}
 
+@app.post("/add_manual_measure")
+async def add_manual_measure(sensor_data: SensorData):
+    # Firma non obbligatoria per misure manuali
+    save_to_db(sensor_data, manual=True)
+    return {"status": "manual data saved"}
+
 @app.get("/status")
 async def status():
-    try:
-        c.execute("SELECT COUNT(*) FROM sensor_data")
-        count = c.fetchone()[0]
-        return {"status": "ok", "records": count}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
+    c.execute("SELECT COUNT(*) FROM sensor_data")
+    count = c.fetchone()[0]
+    return {"status": "ok", "records": count}
 

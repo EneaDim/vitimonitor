@@ -12,13 +12,18 @@ class SensorMock:
 
     def read_temperature(self):
         base = 20 + random.uniform(-5, 5)
-        # 5% probabilità di anomalia
         if random.random() < 0.05:
             return random.choice([-10, 50])
         return base
 
-    def read_humidity(self):
+    def read_humidity_air(self):
         base = 50 + random.uniform(-10, 10)
+        if random.random() < 0.05:
+            return random.choice([0, 100])
+        return base
+
+    def read_humidity_soil(self):
+        base = 30 + random.uniform(-5, 5)
         if random.random() < 0.05:
             return random.choice([0, 100])
         return base
@@ -39,7 +44,6 @@ class SensorMock:
         return f"signature_{self.sensor_id}"
 
     def timestamp(self):
-        # Falsa asincronia: ogni sensore è “indietro” fino a 3 secondi
         lag = random.randint(0, 3)
         return (datetime.utcnow() - timedelta(seconds=lag)).isoformat()
 
