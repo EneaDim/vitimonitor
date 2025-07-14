@@ -10,6 +10,7 @@ zones: [zone_north, zone_south, zone_east, zone_west]
 
 soglie:
   temperature: [0, 40]
-  humidity: [10, 90]
+  humidity_air: [30, 70]     # valori tipici accettabili per aria
+  humidity_soil: [15, 35]    # valori tipici accettabili per suolo
   luminosity: [0, 100000]
 
