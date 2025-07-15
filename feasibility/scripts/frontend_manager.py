@@ -13,16 +13,12 @@ def render(df):
     st.subheader("💰 Parametri Economici")
     col_econ1, col_econ2, col_econ3 = st.columns(3)
     with col_econ1:
-        prezzo_kg = st.number_input("Prezzo uva (€/kg)", value=1.5, step=0.1, format="%.2f")
-    with col_econ2:
-        costo_critico_per_zona = st.number_input("Penalità per zona a rischio (€)", value=500, step=50)
-    with col_econ3:
         produzione_base_kg = st.number_input("Produzione ideale (kg)", value=20000, step=1000)
-
-    # 🔷 Calcoli economici
-    produzione_stimata = produzione_base_kg * (1 - df_week['temperature'].std() / 10)
-    ricavi = produzione_stimata * prezzo_kg
-
+    with col_econ2:
+        prezzo_kg = st.number_input("Prezzo uva (€/kg)", value=1.5, step=0.1, format="%.2f")
+    with col_econ3:
+        kg_uva_perduta = st.number_input("Kg di uva persa per zona a rischio", value=500, step=50)
+    # 🔷 Creazione del DataFrame per le zone
     df_zone = df_week.groupby('zone').agg({
         'temperature': ['mean', 'std'],
         'humidity_air': ['mean', 'std'],
@@ -31,9 +27,17 @@ def render(df):
     df_zone.columns = [
         'zone', 'temp_mean', 'temp_std', 'hum_air_mean', 'hum_air_std', 'hum_soil_mean', 'hum_soil_std'
     ]
+    # 🔷 Calcolo del rischio per ciascuna zona
     df_zone['rischio'] = (df_zone['temp_std'] + df_zone['hum_air_std'] + df_zone['hum_soil_std']) / 3
+    # 🔷 Zone critiche
     zone_critiche = df_zone[df_zone['rischio'] > 2.0]
-    costo_critico_totale = len(zone_critiche) * costo_critico_per_zona
+    # 🔷 Calcoli economici
+    produzione_stimata = produzione_base_kg * (1 - df_week['temperature'].std() / 10)
+    ricavi = produzione_stimata * prezzo_kg
+    # Calcolo della penalità in euro
+    penalita_euro_per_zona = kg_uva_perduta * prezzo_kg
+    costo_critico_totale = len(zone_critiche) * penalita_euro_per_zona
+    # Calcolo ROI
     roi_stimato = ricavi - costo_critico_totale
 
     st.markdown("---")

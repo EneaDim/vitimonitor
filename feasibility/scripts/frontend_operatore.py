@@ -15,9 +15,6 @@ def render(df, backend_url):
         for m in ['temperature', 'humidity_air', 'humidity_soil', 'luminosity']
     ])
 
-    # --- Pianificazione Attività ---
-    st.subheader("📅 Pianificazione Attività")
-
     # Funzione per generare attività in base alle anomalie
     def generate_activity(row):
         activities = []
@@ -46,38 +43,18 @@ def render(df, backend_url):
 
     activities_df = pd.DataFrame(activities_list)
 
-    # Mostra la tabella delle attività pianificate
-    st.markdown("### Pianificazione delle attività")
-    if not activities_df.empty:
-        st.dataframe(activities_df)
-    else:
-        st.info("Nessuna attività pianificata al momento.")
-
-    # Aggiungere la possibilità di selezionare attività pianificate e modificarle
-    st.markdown("---")
-    st.subheader("📅 Aggiungi / Modifica Attività")
-    activity_to_modify = st.selectbox("Seleziona attività da modificare", activities_df['attività'].unique())
-
-    if activity_to_modify:
-        activity_row = activities_df[activities_df['attività'] == activity_to_modify].iloc[0]
-        new_date = st.date_input("Nuova data", value=activity_row['data'])
-        new_priority = st.selectbox("Nuova priorità", ['Alta', 'Media', 'Bassa'], index=['Alta', 'Media', 'Bassa'].index(activity_row['priorità']))
-
-        # Salva la modifica
-        if st.button("Aggiorna attività"):
-            activities_df.loc[activities_df['attività'] == activity_to_modify, 'data'] = new_date
-            activities_df.loc[activities_df['attività'] == activity_to_modify, 'priorità'] = new_priority
-            st.success(f"Attività '{activity_to_modify}' aggiornata con successo!")
-
     # --- Seleziona anomalia e visualizza azioni da fare ---
     st.subheader("📊 Seleziona Anomalia da Risolvere")
 
-    # Selezioniamo un'anomalia
-    anomalia_selected = st.selectbox("Seleziona un'anomalia da risolvere", df_anomalie['sensor_id'].unique())
-    
+    # Selezioniamo le anomalie con azioni da intraprendere
+    df_anomalie_con_azioni = df_anomalie[df_anomalie.apply(lambda row: generate_activity(row), axis=1).apply(bool)]
+
+    # Selezioniamo un'anomalia solo tra quelle con azioni
+    anomalia_selected = st.selectbox("Seleziona un'anomalia da risolvere", df_anomalie_con_azioni['sensor_id'].unique())
+
     # Filtriamo l'anomalia selezionata
     if anomalia_selected:
-        df_selected_anomaly = df_anomalie[df_anomalie['sensor_id'] == anomalia_selected]
+        df_selected_anomaly = df_anomalie_con_azioni[df_anomalie_con_azioni['sensor_id'] == anomalia_selected]
 
         # Selezioniamo le azioni da intraprendere
         if not df_selected_anomaly.empty:
@@ -98,9 +75,34 @@ def render(df, backend_url):
                         # Rimuoviamo l'attività completata dalla lista
                         activities_df = activities_df[activities_df['attività'] != action_message]  # Elimina attività completata
                         st.success(f"Anomalia in zona {row['zone']} completata e attività rimossa dalla pianificazione.")
-            else:
-                st.warning("Nessuna azione da intraprendere per questa anomalia.")
 
+    # Mostra la tabella delle attività pianificate
+    # --- Pianificazione Attività ---
+    st.subheader("📅 Pianificazione Attività")
+
+    #st.markdown("### Pianificazione delle attività")
+    if not activities_df.empty:
+        st.dataframe(activities_df)
+    else:
+        st.info("Nessuna attività pianificata al momento.")
+
+    st.subheader("📅 Aggiungi / Modifica Attività")
+    activity_to_modify = st.selectbox("Seleziona attività da modificare", activities_df['attività'].unique())
+
+    if activity_to_modify:
+        activity_row = activities_df[activities_df['attività'] == activity_to_modify].iloc[0]
+        new_date = st.date_input("Nuova data", value=activity_row['data'])
+        new_priority = st.selectbox("Nuova priorità", ['Alta', 'Media', 'Bassa'], index=['Alta', 'Media', 'Bassa'].index(activity_row['priorità']))
+
+        # Salva la modifica
+        if st.button("Aggiorna attività"):
+            activities_df.loc[activities_df['attività'] == activity_to_modify, 'data'] = new_date
+            activities_df.loc[activities_df['attività'] == activity_to_modify, 'priorità'] = new_priority
+            st.success(f"Attività '{activity_to_modify}' aggiornata con successo!")
+
+
+    # Aggiungere la possibilità di selezionare attività pianificate e modificarle
+    st.markdown("---")
     # --- Indicatore Chiave di Prestazione delle anomalie ---
     st.subheader("📊 Indicatore Chiave di Prestazione Anomalie")
     st.metric("Anomalie rilevate", len(df_anomalie))

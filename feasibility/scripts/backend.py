@@ -1,5 +1,3 @@
-# scripts/backend.py
-
 import os
 import sqlite3
 from fastapi import FastAPI, HTTPException

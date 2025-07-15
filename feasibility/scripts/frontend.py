@@ -18,7 +18,7 @@ st.title("🍇 VitiMonitor Dashboard")
 st.caption("Monitoraggio in tempo reale e analisi dei dati dei vigneti")
 
 # --- BACKEND URL ---
-st.sidebar.title("⚙️ Configurazione")
+#st.sidebar.title("⚙️ Configurazione")
 backend_url = "http://localhost:8000"
 #backend_url = st.sidebar.text_input(
 #    "🌐 URL Backend API",
@@ -35,7 +35,8 @@ st.session_state.dark_mode = dark_mode
 
 # --- AGGIORNAMENTO DATI ---
 st.sidebar.markdown("---")
-st.sidebar.subheader("🔄 Aggiornamento dati")
+st.sidebar.title("🔄 Aggiornamento dati")
+#st.sidebar.subheader("🔄 Aggiornamento dati")
 
 if st.sidebar.button("📥 Aggiorna manualmente", key="manual_refresh"):
     st.rerun()

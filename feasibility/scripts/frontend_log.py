@@ -18,6 +18,7 @@ def render(df, backend_url):
     today = datetime.today().date()
 
     st.sidebar.markdown("---")
+    st.sidebar.title("📈 Intervallo dati")
     date_range = st.sidebar.date_input(
         "Intervallo date",
         value=(today, today),
@@ -36,36 +37,46 @@ def render(df, backend_url):
         key="log_end_time"
     )
 
-    lat_range = st.sidebar.slider(
-        "Latitudine",
-        -90.0, 90.0,
-        (-90.0, 90.0),
-        step=0.1,
-        key="log_lat_range"
-    )
+    # Impostazione dei valori statici
+    lat_range = (-90.0, 90.0)
+    lon_range = (-180.0, 180.0)
 
-    lon_range = st.sidebar.slider(
-        "Longitudine",
-        -180.0, 180.0,
-        (-180.0, 180.0),
-        step=0.1,
-        key="log_lon_range"
-    )
-
+    # Definizione dei sensori disponibili e delle metriche
     sensori_disponibili = sorted(df['sensor_id'].unique())
-    selected_sensors = st.sidebar.multiselect(
-        "Sensori da visualizzare",
-        options=sensori_disponibili,
-        default=sensori_disponibili,
-        key="log_selected_sensors"
-    )
+    selected_sensors = sensori_disponibili  # Selezionati tutti i sensori disponibili
 
-    selected_metrics = st.sidebar.multiselect(
-        "Metriche da visualizzare",
-        options=METRICHE,
-        default=METRICHE,
-        key="log_selected_metrics"
-    )
+    selected_metrics = METRICHE  # Selezionate tutte le metriche disponibili
+
+    #lat_range = st.sidebar.slider(
+    #    "Latitudine",
+    #    -90.0, 90.0,
+    #    (-90.0, 90.0),
+    #    step=0.1,
+    #    key="log_lat_range"
+    #)
+
+    #lon_range = st.sidebar.slider(
+    #    "Longitudine",
+    #    -180.0, 180.0,
+    #    (-180.0, 180.0),
+    #    step=0.1,
+    #    key="log_lon_range"
+    #)
+
+    #sensori_disponibili = sorted(df['sensor_id'].unique())
+    #selected_sensors = st.sidebar.multiselect(
+    #    "Sensori da visualizzare",
+    #    options=sensori_disponibili,
+    #    default=sensori_disponibili,
+    #    key="log_selected_sensors"
+    #)
+
+    #selected_metrics = st.sidebar.multiselect(
+    #    "Metriche da visualizzare",
+    #    options=METRICHE,
+    #    default=METRICHE,
+    #    key="log_selected_metrics"
+    #)
 
     # Calcolo start_dt e end_dt qui
     start_dt = datetime.combine(date_range[0], start_time)
