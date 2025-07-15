@@ -1,156 +1,195 @@
-/*
- * Zephyr + QEMU + Zbus + MQTT - Mock Sensor Project (con commenti dettagliati)
- * FILES:
- * - prj.conf: configurazione delle feature Zephyr
- * - CMakeLists.txt: definizione progetto
- * - riscv.overlay / cortexm.overlay: override dei device
- */
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/sensor.h>
+#include <zephyr/sys/printk.h>
+#include <stdlib.h>  // For rand()
 
-#include <zephyr/kernel.h>              // Include il kernel Zephyr (thread, sleep, ecc.)
-#include <zephyr/device.h>              // Accesso a dispositivi hardware
-#include <zephyr/devicetree.h>          // Parsing del device tree
-#include <zephyr/drivers/sensor.h>      // API generica per sensori
-#include <zephyr/logging/log.h>         // Logging di sistema
-#include <zephyr/net/mqtt.h>            // API MQTT
-#include <zephyr/net/socket.h>          // Sockets per rete
-#include <zephyr/net/net_config.h>      // Configurazione rete
-#include <zephyr/net/net_if.h>          // Interfacce di rete
-#include <zephyr/zbus/zbus.h>           // Inclusione del message bus Zbus
+// Sensor definitions
+#define SENSOR_TEMP "DHT22"
+#define SENSOR_MOISTURE "Soil_Moisture"
+#define SENSOR_LIGHT "BH1750"
 
-LOG_MODULE_REGISTER(main);              // Abilita il logging per questo modulo (nome: main)
+// Sensor data structure
+struct sensor_data {
+    struct sensor_value temperature;
+    struct sensor_value humidity_air;
+    struct sensor_value humidity_soil;
+    struct sensor_value luminosity;
+};
 
-/* ========== DEFINIZIONE DEL CANALE ZBUS ========== */
+// Configuration variables
+bool enable_compression = true;  // Variable to enable/disable compression
+int sensor_read_interval = 10;   // Sensor read interval in seconds
 
-// Definizione della struttura per i dati dei sensori
-typedef struct {
-    int temp;                           // Temperatura
-    int humidity;                       // Umidità
-} sensor_data_t;
+// Thread definitions
+K_THREAD_STACK_DEFINE(sensor_stack, 1024);
+K_THREAD_STACK_DEFINE(lora_stack, 1024);
+K_THREAD_STACK_DEFINE(power_stack, 512);
 
-// Creazione del canale Zbus che trasporterà struct sensor_data_t
-ZBUS_CHAN_DEFINE(sensor_data_chan,      // Nome del canale
-                 sensor_data_t,         // Tipo di dato trasportato
-                 NULL, NULL,            // Callback opzionali (non usate qui)
-                 ZBUS_OBSERVERS_EMPTY,  // Nessun observer statico
-                 ZBUS_MSG_INIT(.temp = 0, .humidity = 0)); // Valori iniziali
+struct k_thread sensor_thread_data;
+struct k_thread lora_thread_data;
+struct k_thread power_thread_data;
 
-/* ========== THREAD DI PRODUZIONE DATI (MOCK SENSOR) ========== */
-
-// Funzione che rappresenta un sensore fittizio
-void mock_sensor_thread(void)
-{
-    while (1) {
-        // Genera valori casuali simulati
-        sensor_data_t data = {
-            .temp = 22 + (sys_rand32_get() % 5),       // Temp tra 22 e 26
-            .humidity = 40 + (sys_rand32_get() % 10)   // Umidità tra 40 e 49
-        };
-
-        // Pubblica i dati sul canale Zbus
-        zbus_chan_pub(&sensor_data_chan, &data, K_MSEC(100));
-
-        // Attende 2 secondi prima di generare nuovi dati
-        k_sleep(K_SECONDS(2));
-    }
+// Function to generate random sensor values
+struct sensor_value generate_random_value(void) {
+    struct sensor_value value;
+    value.val1 = rand() % 40 + 10;  // Random value between 10 and 50
+    value.val2 = rand() % 1000000;  // Random decimal part
+    return value;
 }
 
-// Creazione di un thread che esegue mock_sensor_thread
-K_THREAD_DEFINE(mock_sensor_tid,        // Nome interno del thread
-                1024,                   // Dimensione dello stack
-                mock_sensor_thread,     // Funzione da eseguire
-                NULL, NULL, NULL,       // Parametri (non usati)
-                5,                      // Priorità del thread
-                0,                      // Opzioni
-                0);                     // Avvio immediato
-
-/* ========== THREAD DI PUBBLICAZIONE MQTT ========== */
-
-// Definizione costanti per la connessione MQTT
-#define MQTT_CLIENTID "zephyr_sensor"   // Nome client identificativo
-#define MQTT_BROKER_ADDR "192.0.2.1"    // IP del broker (sostituire con reale)
-#define MQTT_PORT 1883                  // Porta default MQTT
-#define MQTT_TOPIC "sensor/data"        // Topic a cui pubblicare
-
-// Client MQTT e indirizzo del broker
-static struct mqtt_client client;
-static struct sockaddr_storage broker;
-
-// Callback chiamata quando ci sono eventi MQTT (es. connesso/disconnesso)
-static void mqtt_event_handler(struct mqtt_client *const c, const struct mqtt_evt *evt) {
-    ARG_UNUSED(c);                      // Ignora parametro non usato
-    switch (evt->type) {
-        case MQTT_EVT_CONNACK:
-            LOG_INF("MQTT connected"); // Log: connesso
-            break;
-        case MQTT_EVT_DISCONNECT:
-            LOG_WRN("MQTT disconnected"); // Log: disconnesso
-            break;
-        default:
-            break;                      // Altri eventi non gestiti
-    }
+// Mock function to simulate sensor data fetch
+int mock_sensor_sample_fetch(const struct device *dev) {
+    // Simulate sensor sample fetch by generating random values for sensors
+    printk("Fetching mock data for sensor: %s\n", dev->name);
+    return 0;  // Success
 }
 
-// Funzione per iniziare la connessione MQTT
-static int mqtt_connect(void)
-{
-    struct sockaddr_in *broker4 = (struct sockaddr_in *)&broker;  // Interpreta broker come IPv4
-    broker4->sin_family = AF_INET;                                 // Famiglia indirizzo
-    broker4->sin_port = htons(MQTT_PORT);                          // Porta del broker
-    inet_pton(AF_INET, MQTT_BROKER_ADDR, &broker4->sin_addr);     // Converte stringa IP in binario
-
-    mqtt_client_init(&client);                                     // Inizializza client MQTT
-
-    client.broker = &broker;                                       // Imposta indirizzo del broker
-    client.evt_cb = mqtt_event_handler;                            // Imposta callback eventi
-    client.client_id.utf8 = (uint8_t *)MQTT_CLIENTID;              // ID client come stringa UTF-8
-    client.client_id.size = strlen(MQTT_CLIENTID);                 // Lunghezza dell'ID
-    client.protocol_version = MQTT_VERSION_3_1_1;                  // Versione protocollo MQTT
-    client.transport.type = MQTT_TRANSPORT_NON_SECURE;             // Connessione non sicura (no TLS)
-
-    return mqtt_connect(&client);                                  // Avvia la connessione
+// Mock function to simulate getting data from sensors
+int mock_sensor_channel_get(const struct device *dev, enum sensor_channel chan, struct sensor_value *val) {
+    if (chan == SENSOR_CHAN_AMBIENT_TEMP) {
+        *val = generate_random_value();
+        return 0;
+    } else if (chan == SENSOR_CHAN_HUMIDITY) {
+        *val = generate_random_value();
+        return 0;
+    } else if (chan == SENSOR_CHAN_LIGHT) {
+        *val = generate_random_value();
+        return 0;
+    }
+    return -EINVAL;  // Error if channel not recognized
 }
 
-// Thread che ascolta su Zbus e invia i dati via MQTT
-void mqtt_publisher_thread(void)
-{
-    sensor_data_t received;                // Buffer per ricevere dati dal canale
-
-    if (mqtt_connect() != 0) {             // Prova a connettersi al broker MQTT
-        LOG_ERR("MQTT connection failed");
-        return;                            // Termina se fallisce
+// LoRa send function (stub for sending data via LoRa)
+void lora_send(uint8_t *data, size_t len) {
+    printk("Sending data via LoRa: ");
+    for (int i = 0; i < len; i++) {
+        printk("%02x ", data[i]);
     }
+    printk("\n");
+}
+
+// Sensor reading function
+void read_sensors(void *arg1, void *arg2, void *arg3) {
+    struct sensor_data *data = (struct sensor_data *)arg1;
+    const struct device *temp_sensor = DEVICE_DT_GET(DT_NODELABEL(dht1));
+    const struct device *soil_sensor = DEVICE_DT_GET(DT_NODELABEL(soil_moisture));
+    const struct device *light_sensor = DEVICE_DT_GET(DT_NODELABEL(bh1750));
+
+    if (!device_is_ready(temp_sensor)) {
+        printk("Temperature sensor not ready\n");
+        return;
+    }
+
+    if (!device_is_ready(soil_sensor)) {
+        printk("Soil moisture sensor not ready\n");
+        return;
+    }
+
+    if (!device_is_ready(light_sensor)) {
+        printk("Light sensor not ready\n");
+        return;
+    }
+
+    printk("All sensors ready\n");
 
     while (1) {
-        zbus_chan_sub_wait(&sensor_data_chan, &received, K_FOREVER); // Attende nuovi dati dal canale
+        int ret;
+        ret = mock_sensor_sample_fetch(temp_sensor);  // Using the mock
+        if (ret != 0) {
+            printk("Sensor sample fetch failed with code: %d\n", ret);
+            return;
+        }
 
-        // Crea payload JSON da inviare
-        char payload[64];
-        snprintf(payload, sizeof(payload), "{\"temp\":%d,\"humidity\":%d}",
-                 received.temp, received.humidity);
+        // Read sensor values
+        if (mock_sensor_channel_get(temp_sensor, SENSOR_CHAN_AMBIENT_TEMP, &data->temperature) < 0) {
+            printk("Cannot get temperature\n");
+        } else {
+            printk("Temperature: %d.%06d C\n", data->temperature.val1, data->temperature.val2);
+        }
 
-        // Parametri della pubblicazione MQTT
-        struct mqtt_publish_param param = {
-            .message.topic.qos = MQTT_QOS_0_AT_MOST_ONCE,              // Nessuna conferma
-            .message.topic.topic.utf8 = (uint8_t *)MQTT_TOPIC,         // Topic
-            .message.topic.topic.size = strlen(MQTT_TOPIC),            // Lunghezza topic
-            .message.payload.data = payload,                           // Dati JSON da inviare
-            .message.payload.len = strlen(payload),                    // Lunghezza dati
-            .message_id = sys_rand32_get(),                            // ID casuale del messaggio
-            .dup_flag = 0,
-            .retain_flag = 0
-        };
+        if (mock_sensor_channel_get(temp_sensor, SENSOR_CHAN_HUMIDITY, &data->humidity_air) < 0) {
+            printk("Cannot get humidity\n");
+        } else {
+            printk("Humidity: %d.%06d %%\n", data->humidity_air.val1, data->humidity_air.val2);
+        }
 
-        mqtt_publish(&client, &param);            // Invia i dati al broker
-        k_sleep(K_SECONDS(2));                    // Aspetta prima di inviare il prossimo
+        if (mock_sensor_channel_get(soil_sensor, SENSOR_CHAN_HUMIDITY, &data->humidity_soil) < 0) {
+            printk("Cannot get soil humidity\n");
+        } else {
+            printk("Soil humidity: %d.%06d %%\n", data->humidity_soil.val1, data->humidity_soil.val2);
+        }
+
+        if (mock_sensor_channel_get(light_sensor, SENSOR_CHAN_LIGHT, &data->luminosity) < 0) {
+            printk("Cannot get luminosity\n");
+        } else {
+            printk("Luminosity: %d.%06d lux\n", data->luminosity.val1, data->luminosity.val2);
+        }
+
+        k_sleep(K_SECONDS(sensor_read_interval));  // Sleep between sensor readings
     }
 }
 
-// Creazione thread per pubblicazione MQTT
-K_THREAD_DEFINE(mqtt_pub_tid,             // Nome interno del thread
-                2048,                    // Stack più grande per rete
-                mqtt_publisher_thread,   // Funzione da eseguire
-                NULL, NULL, NULL,        // Parametri
-                5,                       // Priorità
-                0,                       // Opzioni
-                0);
+// Function to compress sensor data (simple example)
+void compress_data(struct sensor_data *data, uint8_t *compressed_data) {
+    compressed_data[0] = data->temperature.val1 >> 8;
+    compressed_data[1] = data->temperature.val1 & 0xFF;
+    compressed_data[2] = data->humidity_air.val1 >> 8;
+    compressed_data[3] = data->humidity_air.val1 & 0xFF;
+    compressed_data[4] = data->humidity_soil.val1 >> 8;
+    compressed_data[5] = data->humidity_soil.val1 & 0xFF;
+    compressed_data[6] = data->luminosity.val1 >> 8;
+    compressed_data[7] = data->luminosity.val1 & 0xFF;
+}
+
+// LoRa send function with data compression
+void send_lora(void *arg1, void *arg2, void *arg3) {
+    struct sensor_data *data = (struct sensor_data *)arg1;
+    uint8_t compressed_data[8];
+    uint8_t raw_data[8];
+
+    if (enable_compression) {
+        compress_data(data, compressed_data);
+        lora_send(compressed_data, sizeof(compressed_data));  // Send compressed data
+    } else {
+        raw_data[0] = data->temperature.val1 >> 8;
+        raw_data[1] = data->temperature.val1 & 0xFF;
+        raw_data[2] = data->humidity_air.val1 >> 8;
+        raw_data[3] = data->humidity_air.val1 & 0xFF;
+        raw_data[4] = data->humidity_soil.val1 >> 8;
+        raw_data[5] = data->humidity_soil.val1 & 0xFF;
+        raw_data[6] = data->luminosity.val1 >> 8;
+        raw_data[7] = data->luminosity.val1 & 0xFF;
+
+        lora_send(raw_data, sizeof(raw_data));  // Send raw data
+    }
+}
+
+// Power management function
+void manage_power(void *arg1, void *arg2, void *arg3) {
+    while (1) {
+        k_sleep(K_SECONDS(10));  // Sleep for power management
+    }
+}
+
+int main(void) {
+    struct sensor_data data;
+
+    // Create threads for sensor reading, LoRa sending, and power management
+    k_thread_create(&sensor_thread_data, sensor_stack, K_THREAD_STACK_SIZEOF(sensor_stack),
+                    read_sensors, &data, NULL, NULL, 7, 0, K_NO_WAIT);
+
+    k_thread_create(&lora_thread_data, lora_stack, K_THREAD_STACK_SIZEOF(lora_stack),
+                    send_lora, &data, NULL, NULL, 6, 0, K_NO_WAIT);
+
+    k_thread_create(&power_thread_data, power_stack, K_THREAD_STACK_SIZEOF(power_stack),
+                    manage_power, NULL, NULL, NULL, 5, 0, K_NO_WAIT);
+
+    // Main loop to keep the application running
+    while (1) {
+        k_sleep(K_SECONDS(sensor_read_interval));  // Sleep between sensor reads
+    }
+
+    return 0;
+}
 

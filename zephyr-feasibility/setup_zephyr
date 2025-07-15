@@ -1,0 +1,18 @@
+# PYTHON VENV
+cd ~/zephyrproject
+python3 -m venv ~/zephyrproject/.venv
+source ~/zephyrproject/.venv/bin/activate
+# WEST
+pip install west
+west init
+west update
+west zephyr-export
+west packages pip --install
+# SDK
+cd ~/zephyrproject/zephyr
+west sdk install
+west build -b qemu_x86 samples/hello_world
+west build -t run
+# EXPORT
+export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
+export ZEPHYR_BASE=/home/eneadim/zephyrproject/zephyr

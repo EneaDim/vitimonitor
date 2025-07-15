@@ -1,0 +1,72 @@
+/ {
+    // Define I2C device for soil moisture sensor
+    i2c1: i2c@40005400 {  // Use the correct I2C controller address for your platform
+        compatible = "zephyr,i2c";
+        status = "okay";
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        reg = <0x40005400 0x400>;  // I2C controller base address and size
+        soil_moisture: soil_moisture@50 {
+            compatible = "zephyr,soil-moisture-sensor";
+            reg = <0x50>;  // Correct I2C address for the soil moisture sensor
+            label = "Soil_Moisture";
+            status = "okay";
+        };
+    };
+
+    // Define SPI device for BH1750 light sensor
+    spi1: spi@4002C000 {  // Use the correct SPI controller address for your platform
+        compatible = "zephyr,spi";
+        status = "okay";
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        reg = <0x4002C000 0x400>;  // SPI controller base address and size
+        bh1750: bh1750@0 {
+            compatible = "bosch,bh1750";
+            reg = <0>;  // This represents the chip-select (CS) pin number
+            status = "okay";
+            label = "BH1750";
+
+            // SPI configuration (example)
+            spi-max-frequency = <1000000>;  // Maximum SPI frequency
+            cs-gpios = <&gpio0 10 0>;  // Chip select pin
+        };
+    };
+
+    // Define the DHT22 sensor node, linked to UART (assuming UART1)
+    dht1: dht22@0 {
+        compatible = "zephyr,dht22";
+        status = "okay";
+        label = "DHT22";
+
+        reg = <0x40010000 0x100>;
+
+        // Point to the UART controller (assuming UART1 is being used)
+        uart-port = <&uart1>;
+
+        // UART settings for DHT22 sensor (assuming UART1 configuration is done elsewhere)
+        tx-pin = <10>;  // Replace with the actual TX pin number
+        rx-pin = <11>;  // Replace with the actual RX pin number
+    };
+
+    // Define the LoRa radio node (e.g., SX127x) connected via SPI
+    lora: sx127x@4003C000 {
+        compatible = "semtech,sx1276";  // Replace with the correct LoRa chip
+        reg = <0x4003C000 0x400>;  // Chip select (CS) pin number for SPI
+        status = "okay";
+        label = "LoRa_Radio";
+
+        // SPI configuration
+        spi-max-frequency = <1000000>;  // Adjust as needed
+        cs-gpios = <&gpio0 12 0>;  // Chip select GPIO pin (correct reference to gpio0)
+
+        // LoRa specific settings (e.g., reset, IRQ)
+        reset-gpios = <&gpio0 13 0>;  // Reset pin
+        irq-gpios = <&gpio0 14 0>;    // IRQ pin
+        irq-polarity = <0>;  // Set to 1 for active high, 0 for active low
+    };
+};
+
+

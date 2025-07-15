@@ -1,32 +1,66 @@
-# Riassunto Progetto Zephyr con QEMU, Zbus e MQTT
+# Progetto IoT LoRa con Zephyr RTOS
 
-## Discussione
+## Descrizione
 
-1. **Obiettivo iniziale**: emulare un firmware su QEMU che gira Zephyr, con sensori multipli (UART, SPI, I2C, ADC) e connessione remota via MQTT.
-2. **Strategia**:
-   - Uso di QEMU per emulare l’hardware e Zephyr come OS.
-   - Emulazione sensori tramite thread mock che pubblicano dati su Zbus (message bus interno).
-   - Un altro thread sottoscrive dati dal bus e li invia via MQTT verso un broker.
-3. **Codice fornito**: programma in C per Zephyr che implementa
-   - canale Zbus per dati sensori,
-   - thread di produzione dati mock,
-   - thread di pubblicazione MQTT,
-   - gestione MQTT e connessione.
-4. **Configurazioni**:
-   - `prj.conf` con le feature di rete, MQTT e Zbus abilitate
-   - `CMakeLists.txt` per build
-   - overlay device per QEMU RISC-V e Cortex-M (override console)
-5. **Funzionamento generale**:
-   - Il thread mock produce dati simulati di sensori e li pubblica sul canale Zbus
-   - Il thread MQTT si connette a un broker remoto e ascolta i dati dal canale
-   - Appena riceve dati, li invia come payload JSON sul topic MQTT
-6. **Estensioni possibili**:
-   - Aggiungere driver reali per UART, SPI, I2C, ADC per leggere sensori reali o simulati
-   - Espandere il canale Zbus con più tipi di dati per più sensori
-   - Integrare sicurezza TLS per MQTT
-   - Fare il porting su board reale usando gli stessi driver e codice applicativo
+Questo progetto raccoglie i dati da 4 sensori (temperatura, umidità aria, umidità suolo, luminosità), li comprime e li invia tramite LoRa utilizzando **Zephyr RTOS**. Il progetto è progettato per un dispositivo basato su **RAK3172** (LoRa STM32WLE5) e supporta la gestione del consumo energetico e la comunicazione LoRaWAN.
+
+## Sensori Utilizzati
+
+- **DHT22**: Sensore di temperatura e umidità aria.
+- **Capacitive Soil Moisture Sensor**: Sensore di umidità del suolo.
+- **BH1750**: Sensore di luminosità.
+
+## Funzionalità
+
+- Raccolta dei dati dai sensori.
+- Compressione opzionale dei dati per risparmiare larghezza di banda.
+- Invio dei dati tramite LoRa.
+- Gestione del risparmio energetico con modalità di sleep.
+- Intervallo configurabile per la lettura dei sensori.
+
+## Configurazione del Progetto
+
+### Requisiti
+
+- **Zephyr RTOS** v2.6 o superiore.
+- **CMake** e **Ninja** per la build.
+- Hardware: **RAK3172** (o simili) per la comunicazione LoRa.
 
 ---
 
-Questo progetto permette di simulare un sistema embedded con sensori multipli e connessione cloud tramite MQTT, usando Zephyr e QEMU come ambiente di sviluppo e test.
+### Come Compilare e Caricare il Firmware
+
+1. Clona il repository:
+   ```bash
+   git clone https://github.com/tuo-repo/loara-sensors-zephyr.git
+   cd loara-sensors-zephyr
+   ```
+2. Configura il progetto per la tua board (ad esempio, se usi una board basata su RAK3172):
+   ```bash
+    west build -b rak3172_board
+   ```
+3. Carica il firmware sulla tua board:
+   ```bash
+   west flash
+   ```
+4. Monitoraggio della seriale per i log:
+   ```bash
+   west monitor
+   ```
+
+---
+
+### Personalizzazione
+
+- Compressione Dati: La compressione dei dati può essere abilitata o disabilitata modificando la variabile enable_compression nel codice.
+
+- Intervallo di Lettura: L'intervallo di lettura dei sensori può essere modificato tramite la variabile sensor_read_interval.
+
+---
+
+## Licenza
+
+Distribuito sotto la Licenza MIT. Vedi LICENSE per ulteriori informazioni.
+
+---
 
