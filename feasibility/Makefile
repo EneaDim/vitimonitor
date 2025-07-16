@@ -18,9 +18,24 @@ DB_FILE := sensordata.db
 CONFIG_FILE := config.yml
 TEST_FILE := $(SRC_DIR)/test_backend.py
 PYTEST := $(VENV_DIR)/bin/pytest
+SCRIPT := $(SRC_DIR)/setup_postgres.sh
+
+# ========= Configurazione variabili direttamente nel Makefile =========
+# Variabili per configurazione PostgreSQL e MQTT
+DB_URL := "postgresql://postgrep:postgrep@localhost/sensordata"
+DB_USER := "postgrep"
+DB_PASSWORD := "postgrep"
+DB_NAME := "sensordata"
+SUPERUSER_NAME := "admin_user"
+SUPERUSER_PASSWORD := "newpassword"
+USE_MQTT := 1
+MQTT_BROKER := "localhost"
+MQTT_PORT := 1883
+MQTT_TOPIC := "sensor/data"
 
 .PHONY: help run-all firmware curlroot curlgetdata curlstatus lint test clean cleandb frontend init venv freeze gen-config
 
+# Aiuto
 help:
 	@echo ""
 	@echo "$(COLOR)Comandi disponibili:$(RESET)"
@@ -52,6 +67,46 @@ help:
 	@echo "  $(COLOR)make cleandb$(RESET)          - Elimina il file del database SQLite"
 	@echo ""
 
+setup-postgres:
+	$(ECHO) Configurando PostgreSQL...
+	@sudo -u postgres psql -c "SELECT 1 FROM pg_database WHERE datname = '$(DB_NAME)'" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE $(DB_NAME);"
+	@sudo -u postgres psql -c "SELECT 1 FROM pg_roles WHERE rolname = '$(DB_USER)'" | grep -q 1 || sudo -u postgres psql -c "CREATE ROLE $(DB_USER) WITH LOGIN PASSWORD '$(DB_PASSWORD)';"
+	@sudo -u postgres psql -c "SELECT 1 FROM pg_roles WHERE rolname = '$(SUPERUSER_NAME)'" | grep -q 1 || sudo -u postgres psql -c "CREATE ROLE $(SUPERUSER_NAME) WITH LOGIN PASSWORD '$(SUPERUSER_PASSWORD)' SUPERUSER;"
+	@sudo -u postgres psql -d $(DB_NAME) -c "GRANT CONNECT ON DATABASE $(DB_NAME) TO $(DB_USER);"
+	@sudo -u postgres psql -d $(DB_NAME) -c "GRANT USAGE, CREATE ON SCHEMA public TO $(DB_USER);"
+	@sudo -u postgres psql -d $(DB_NAME) -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $(DB_USER);"
+	@sudo -u postgres psql -d $(DB_NAME) -c "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $(DB_USER);"
+	@sudo -u postgres psql -d $(DB_NAME) -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO $(DB_USER);"
+	@sudo -u postgres psql -d $(DB_NAME) -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO $(DB_USER);"
+	@sudo -u postgres psql -d $(DB_NAME) -c "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO $(DB_USER);"
+	@sudo -u postgres psql -d $(DB_NAME) -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO $(DB_USER);"
+	@sudo -u postgres psql -d $(DB_NAME) -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO $(DB_USER);"
+	@echo "PostgreSQL configurato correttamente."
+
+delete-db:
+	@echo "Verificando l'esistenza del database $(DB_NAME)..."
+	@DB_EXISTS=$(shell sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='$(DB_NAME)'") && \
+	if [ -z "$$DB_EXISTS" ]; then \
+		echo "Il database $(DB_NAME) non esiste."; \
+	else \
+		echo "Revocando i privilegi dell'utente PostgreSQL $(DB_USER)..."; \
+		sudo -u postgres psql -c "REVOKE ALL PRIVILEGES ON SCHEMA public FROM $(DB_USER);" && \
+		sudo -u postgres psql -c "REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM $(DB_USER);" && \
+		sudo -u postgres psql -c "REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM $(DB_USER);" && \
+		sudo -u postgres psql -c "REVOKE ALL PRIVILEGES ON DATABASE $(DB_NAME) FROM $(DB_USER);" && \
+		echo "Tutti i privilegi revocati per l'utente $(DB_USER)."; \
+		echo "Rimuovendo gli oggetti associati all'utente $(DB_USER)..."; \
+		sudo -u postgres psql -c "DROP OWNED BY $(DB_USER) CASCADE;" && \
+		echo "Tutti gli oggetti associati all'utente $(DB_USER) sono stati rimossi."; \
+		echo "Eliminando il ruolo $(DB_USER)..."; \
+		sudo -u postgres psql -c "DROP ROLE IF EXISTS $(DB_USER);" && \
+		echo "Ruolo $(DB_USER) eliminato."; \
+		echo "Eliminando il database $(DB_NAME)..."; \
+		sudo -u postgres psql -c "DROP DATABASE IF EXISTS $(DB_NAME);" && \
+		echo "Database $(DB_NAME) eliminato con successo."; \
+	fi
+
+# Inizializza ambiente virtuale
 init:
 	@echo "$(ORANGE)🔧 Inizializzazione progetto...$(NC)"
 	@if [ ! -d $(VENV_DIR) ]; then \
@@ -98,9 +153,20 @@ endif
 	yaml.dump(cfg,open('$(CONFIG_FILE)','w'))"
 	$(ECHO) Configurazione aggiornata: $(KEY)=$(VALUE)
 
+# Avvio FastAPI backend
 backend:
 	$(ECHO) Avvio FastAPI backend...
-	DB_FILE=$(DB_FILE) $(UVICORN) $(APP) --reload --host $(HOST) --port $(PORT)
+	DB_URL=$(DB_URL) \
+	DB_USER=$(DB_USER) \
+	DB_PASSWORD=$(DB_PASSWORD) \
+	DB_NAME=$(DB_NAME) \
+	SUPERUSER_NAME=$(SUPERUSER_NAME) \
+	SUPERUSER_PASSWORD=$(SUPERUSER_PASSWORD) \
+	USE_MQTT=$(USE_MQTT) \
+	MQTT_BROKER=$(MQTT_BROKER) \
+	MQTT_PORT=$(MQTT_PORT) \
+	MQTT_TOPIC=$(MQTT_TOPIC) \
+	$(UVICORN) $(APP) --reload --host $(HOST) --port $(PORT)
 
 firmware:
 	$(ECHO) Avvio firmware mock...
