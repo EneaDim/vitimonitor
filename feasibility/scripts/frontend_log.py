@@ -15,28 +15,6 @@ def render(df, backend_url):
 
     dark_mode = st.session_state.log_dark_mode
 
-    today = datetime.today().date()
-
-    st.sidebar.markdown("---")
-    st.sidebar.title("📈 Intervallo dati")
-    date_range = st.sidebar.date_input(
-        "Intervallo date",
-        value=(today, today),
-        key="log_date_range"
-    )
-
-    start_time = st.sidebar.time_input(
-        "Orario inizio",
-        value=time(0, 0),
-        key="log_start_time"
-    )
-
-    end_time = st.sidebar.time_input(
-        "Orario fine",
-        value=time(23, 59),
-        key="log_end_time"
-    )
-
     # Impostazione dei valori statici
     lat_range = (-90.0, 90.0)
     lon_range = (-180.0, 180.0)
@@ -47,50 +25,16 @@ def render(df, backend_url):
 
     selected_metrics = METRICHE  # Selezionate tutte le metriche disponibili
 
-    #lat_range = st.sidebar.slider(
-    #    "Latitudine",
-    #    -90.0, 90.0,
-    #    (-90.0, 90.0),
-    #    step=0.1,
-    #    key="log_lat_range"
-    #)
-
-    #lon_range = st.sidebar.slider(
-    #    "Longitudine",
-    #    -180.0, 180.0,
-    #    (-180.0, 180.0),
-    #    step=0.1,
-    #    key="log_lon_range"
-    #)
-
-    #sensori_disponibili = sorted(df['sensor_id'].unique())
-    #selected_sensors = st.sidebar.multiselect(
-    #    "Sensori da visualizzare",
-    #    options=sensori_disponibili,
-    #    default=sensori_disponibili,
-    #    key="log_selected_sensors"
-    #)
-
-    #selected_metrics = st.sidebar.multiselect(
-    #    "Metriche da visualizzare",
-    #    options=METRICHE,
-    #    default=METRICHE,
-    #    key="log_selected_metrics"
-    #)
-
-    # Calcolo start_dt e end_dt qui
-    start_dt = datetime.combine(date_range[0], start_time)
-    end_dt = datetime.combine(date_range[1], end_time)
-
     # --- FILTRI SIDEBAR ---
     st.sidebar.markdown("---")
-    df_filtered = df[
-        (df['timestamp'] >= start_dt) &
-        (df['timestamp'] <= end_dt) &
-        df['lat'].between(*lat_range) &
-        df['lon'].between(*lon_range) &
-        df['sensor_id'].isin(selected_sensors)
-    ]
+    df_filtered = df
+    #df_filtered = df[
+    #    (df['timestamp'] >= start_dt) &
+    #    (df['timestamp'] <= end_dt) &
+    #    df['lat'].between(*lat_range) &
+    #    df['lon'].between(*lon_range) &
+    #    df['sensor_id'].isin(selected_sensors)
+    #]
 
     if not df_filtered.empty:
         st.success(f"Ultimo aggiornamento: **{df_filtered['timestamp'].max()}**")

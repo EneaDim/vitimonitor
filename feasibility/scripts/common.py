@@ -25,8 +25,9 @@ def data_to_dataframe(data):
     if not data:
         return pd.DataFrame()
     df = pd.DataFrame(data)
-    df['lat'] = df['gps'].apply(lambda g: g.get('lat') if g else None)
-    df['lon'] = df['gps'].apply(lambda g: g.get('lon') if g else None)
+    if 'lat' in df.columns and 'lon' in df.columns:
+        df['lat'] = df['lat']
+        df['lon'] = df['lon']
     if 'timestamp' in df.columns:
         df['timestamp'] = pd.to_datetime(df['timestamp'])
     return df

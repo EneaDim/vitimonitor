@@ -13,7 +13,6 @@ init(autoreset=True)
 class FirmwareMock:
     def __init__(self, config):
         self.config = config
-
         self.backend_url = config.get("backend_url", "http://localhost:8000/data")
 
         self.use_mqtt = config.get("use_mqtt", False)

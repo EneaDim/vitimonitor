@@ -2,14 +2,25 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from common import check_thresholds
+import pandas as pd
 
 def render(df):
     st.header("👨‍💼 Manager")
-    df['date'] = df['timestamp'].dt.date
+    
+    # Verifica che 'timestamp' sia in formato datetime, altrimenti convertilo
+    df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+    
+    # Ora puoi utilizzare .dt senza problemi
+    df['timestamp'] = df['timestamp'].dt.tz_localize(None)  # Rimuove eventuali informazioni sul fuso orario
+
     last_week = pd.Timestamp.today() - pd.Timedelta(days=7)
+    last_week = last_week.tz_localize(None)  # Rimuove timezone info se esiste
+
+    # Filtering the data for the last week
+    df['date'] = df['timestamp'].dt.date
     df_week = df[df['timestamp'] >= last_week]
 
-    # 🔷 Parametri economici
+    # La parte successiva del codice rimane invariata
     st.subheader("💰 Parametri Economici")
     col_econ1, col_econ2, col_econ3 = st.columns(3)
     with col_econ1:
@@ -18,6 +29,7 @@ def render(df):
         prezzo_kg = st.number_input("Prezzo uva (€/kg)", value=1.5, step=0.1, format="%.2f")
     with col_econ3:
         kg_uva_perduta = st.number_input("Kg di uva persa per zona a rischio", value=500, step=50)
+
     # 🔷 Creazione del DataFrame per le zone
     df_zone = df_week.groupby('zone').agg({
         'temperature': ['mean', 'std'],

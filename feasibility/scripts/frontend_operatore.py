@@ -38,71 +38,78 @@ def render(df, backend_url):
                 'attività': activity,
                 'priorità': 'Alta',  # Puoi aggiungere logiche per assegnare priorità
                 'zona': row['zone'],
-                'sensor_id': row['sensor_id'],  # Utilizzo sensor_id anziché stato
+                'sensor_id': row.get('sensor_id', 'Unknown'),  # Use get to avoid KeyError
+                'status': 'Da fare'  # Stato dell'attività
             })
 
+    # Crea il DataFrame delle attività
     activities_df = pd.DataFrame(activities_list)
 
-    # --- Seleziona anomalia e visualizza azioni da fare ---
-    st.subheader("📊 Seleziona Anomalia da Risolvere")
+    # Rimuovi eventuali duplicati (stesso sensore e stessa data)
+    activities_df = activities_df.drop_duplicates(subset=['sensor_id', 'data'])
 
-    # Selezioniamo le anomalie con azioni da intraprendere
-    df_anomalie_con_azioni = df_anomalie[df_anomalie.apply(lambda row: generate_activity(row), axis=1).apply(bool)]
-
-    # Selezioniamo un'anomalia solo tra quelle con azioni
-    anomalia_selected = st.selectbox("Seleziona un'anomalia da risolvere", df_anomalie_con_azioni['sensor_id'].unique())
-
-    # Filtriamo l'anomalia selezionata
-    if anomalia_selected:
-        df_selected_anomaly = df_anomalie_con_azioni[df_anomalie_con_azioni['sensor_id'] == anomalia_selected]
-
-        # Selezioniamo le azioni da intraprendere
-        if not df_selected_anomaly.empty:
-            row = df_selected_anomaly.iloc[0]  # Prendiamo il primo elemento
-            activities = generate_activity(row)  # Otteniamo tutte le attività d'azione
-            if activities:
-                action_message = activities[0]  # Prendiamo il primo messaggio d'azione
-
-                st.write(f"🔴 **Anomalia Rilevata:**")
-                st.write(f"**Zona**: {row['zone']}")
-                st.write(f"**Sensore**: {row['sensor_id']}")
-                st.write(f"**Azione da fare**: {action_message}")
-
-                # Conferma della conclusione dell'attività
-                if st.button(f"✅ Conferma completamento attività {action_message}"):
-                    # Chiediamo conferma dello svolgimento dell'attività
-                    if st.button(f"Confermi lo svolgimento dell'attività: {action_message}?"):
-                        # Rimuoviamo l'attività completata dalla lista
-                        activities_df = activities_df[activities_df['attività'] != action_message]  # Elimina attività completata
-                        st.success(f"Anomalia in zona {row['zone']} completata e attività rimossa dalla pianificazione.")
-
-    # Mostra la tabella delle attività pianificate
     # --- Pianificazione Attività ---
     st.subheader("📅 Pianificazione Attività")
 
-    #st.markdown("### Pianificazione delle attività")
-    if not activities_df.empty:
-        st.dataframe(activities_df)
-    else:
-        st.info("Nessuna attività pianificata al momento.")
+    # Visualizzazione della tabella delle attività
+    activities_df = activities_df.reset_index(drop=True)
 
+    # Selezione attività da modificare/mark as completed
+    selected_activity = st.selectbox("Seleziona attività da risolvere", activities_df.index)
+
+    if selected_activity is not None:
+        selected_row = activities_df.iloc[selected_activity]
+
+        # Mostra i dettagli dell'attività
+        st.write(f"**Attività da Risolvere**:")
+        st.write(f"**Data:** {selected_row['data']}")
+        st.write(f"**Attività:** {selected_row['attività']}")
+        st.write(f"**Zona:** {selected_row['zona']}")
+        st.write(f"**Sensore:** {selected_row['sensor_id']}")
+        st.write(f"**Priorità:** {selected_row['priorità']}")
+
+        # Chiedi conferma prima di completare l'attività
+        confirm_button = st.button(f"✅ Conferma completamento attività: {selected_row['attività']}")
+
+        if confirm_button:
+            # Mostra un messaggio per chiedere la conferma
+            st.write(f"Sei sicuro di voler completare l'attività: {selected_row['attività']}?")
+
+            # Usa un altro pulsante per confermare il completamento dell'attività
+            complete_button = st.button("✅ Completa attività")
+
+            if complete_button:
+                # Modifica lo stato dell'attività
+                activities_df.loc[selected_activity, 'status'] = 'Completata'  # Modifica lo stato dell'attività
+
+                # Rimuovi l'attività completata dalla lista
+                activities_df = activities_df[activities_df['status'] != 'Completata']
+                st.success(f"Attività in zona {selected_row['zona']} completata.")
+
+                # Ricarica automaticamente la pagina per aggiornare la tabella
+                st.rerun()
+
+    # Mostra la tabella delle attività
+    st.dataframe(activities_df)
+
+    # --- Aggiungi / Modifica Attività ---
     st.subheader("📅 Aggiungi / Modifica Attività")
-    activity_to_modify = st.selectbox("Seleziona attività da modificare", activities_df['attività'].unique())
+    if 'attività' in activities_df.columns:
+        activity_to_modify = st.selectbox("Seleziona attività da modificare", activities_df['attività'].unique())
 
-    if activity_to_modify:
-        activity_row = activities_df[activities_df['attività'] == activity_to_modify].iloc[0]
-        new_date = st.date_input("Nuova data", value=activity_row['data'])
-        new_priority = st.selectbox("Nuova priorità", ['Alta', 'Media', 'Bassa'], index=['Alta', 'Media', 'Bassa'].index(activity_row['priorità']))
+        if activity_to_modify:
+            activity_row = activities_df[activities_df['attività'] == activity_to_modify].iloc[0]
+            new_date = st.date_input("Nuova data", value=activity_row['data'])
+            new_priority = st.selectbox("Nuova priorità", ['Alta', 'Media', 'Bassa'], index=['Alta', 'Media', 'Bassa'].index(activity_row['priorità']))
 
-        # Salva la modifica
-        if st.button("Aggiorna attività"):
-            activities_df.loc[activities_df['attività'] == activity_to_modify, 'data'] = new_date
-            activities_df.loc[activities_df['attività'] == activity_to_modify, 'priorità'] = new_priority
-            st.success(f"Attività '{activity_to_modify}' aggiornata con successo!")
+            # Salva la modifica
+            if st.button("Aggiorna attività"):
+                activities_df.loc[activities_df['attività'] == activity_to_modify, 'data'] = new_date
+                activities_df.loc[activities_df['attività'] == activity_to_modify, 'priorità'] = new_priority
+                st.success(f"Attività '{activity_to_modify}' aggiornata con successo!")
+    else:
+        st.error("Errore: La colonna 'attività' non è presente nei dati delle attività.")
 
-
-    # Aggiungere la possibilità di selezionare attività pianificate e modificarle
-    st.markdown("---")
     # --- Indicatore Chiave di Prestazione delle anomalie ---
     st.subheader("📊 Indicatore Chiave di Prestazione Anomalie")
     st.metric("Anomalie rilevate", len(df_anomalie))

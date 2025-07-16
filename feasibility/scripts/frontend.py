@@ -1,3 +1,4 @@
+import pandas as pd
 from datetime import datetime, time
 import streamlit as st
 from common import METRICHE, fetch_sensor_data, data_to_dataframe
@@ -18,36 +19,70 @@ st.title("🍇 VitiMonitor Dashboard")
 st.caption("Monitoraggio in tempo reale e analisi dei dati dei vigneti")
 
 # --- BACKEND URL ---
-#st.sidebar.title("⚙️ Configurazione")
 backend_url = "http://localhost:8000"
-#backend_url = st.sidebar.text_input(
-#    "🌐 URL Backend API",
-#    value="http://localhost:8000",
-#    key="backend_url"
-#)
 
-# --- DARK MODE ---
-if 'dark_mode' not in st.session_state:
-    st.session_state.dark_mode = True
-
-dark_mode = st.sidebar.toggle("🌙 Modalità scura", value=st.session_state.dark_mode)
-st.session_state.dark_mode = dark_mode
+# Memorizza la scelta dell'utente
+#dark_mode = st.sidebar.toggle("🌙 Modalità scura", value=st.session_state.dark_mode)
+#st.session_state.dark_mode = dark_mode
+st.session_state.dark_mode = True
 
 # --- AGGIORNAMENTO DATI ---
-st.sidebar.markdown("---")
 st.sidebar.title("🔄 Aggiornamento dati")
 #st.sidebar.subheader("🔄 Aggiornamento dati")
 
 if st.sidebar.button("📥 Aggiorna manualmente", key="manual_refresh"):
     st.rerun()
 
-# --- CARICA DATI ---
-data = fetch_sensor_data(backend_url)
-df = data_to_dataframe(data)
+from datetime import datetime, time
+import streamlit as st
+import requests
 
-if df.empty:
-    st.warning("Nessun dato ricevuto dal backend.")
+# Filtro intervallo dati in frontend.py (sidebar)
+st.sidebar.markdown("---")
+st.sidebar.title("📈 Intervallo dati")
+date_range = st.sidebar.date_input(
+    "Intervallo date",
+    value=(datetime.today().date(), datetime.today().date()),  # default today
+    key="log_date_range"
+)
+
+start_time = st.sidebar.time_input(
+    "Orario inizio",
+    value=time(0, 0),
+    key="log_start_time"
+)
+
+end_time = st.sidebar.time_input(
+    "Orario fine",
+    value=time(23, 59),
+    key="log_end_time"
+)
+
+# Converti le date e orari in stringhe per inviarli tramite la richiesta
+start_date = date_range[0].strftime('%Y-%m-%d')
+end_date = date_range[1].strftime('%Y-%m-%d')
+start_time_str = start_time.strftime('%H:%M:%S')
+end_time_str = end_time.strftime('%H:%M:%S')
+
+# Costruisci la URL dell'endpoint e invia la richiesta GET
+url = f"http://localhost:8000/data?start_date={start_date}&end_date={end_date}&start_time={start_time_str}&end_time={end_time_str}"
+
+# Fai una richiesta GET al backend
+response = requests.get(url)
+
+# Gestisci la risposta
+if response.status_code == 200:
+    data = response.json()['data']
+    df = pd.DataFrame(data)
+    if df.empty:
+        st.warning("Nessun dato ricevuto dal backend.")
+        st.stop()
+else:
+    st.error(f"Errore nel recupero dei dati: {response.status_code}")
     st.stop()
+
+df['timestamp'] = pd.to_datetime(df['timestamp'], utc=True)  # Converte in datetime UTC
+df['timestamp'] = df['timestamp'].dt.tz_convert('Europe/Zurich')  # Converti in CEST
 
 # --- TABS FRONTEND ---
 tabs = st.tabs(["👨‍💼 Manager", "🍷 Enologo", "👷 Operatore", "📝 Log"])
