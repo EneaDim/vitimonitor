@@ -1,4 +1,4 @@
-# **Vitimonitor** - Nodo Agricolo Sicuro per Viticoltura
+# 🍇 **Vitimonitor** - Nodo Agricolo Sicuro per Viticoltura
 
 **Vitimonitor** è un sistema integrato progettato per il monitoraggio intelligente e sicuro delle coltivazioni vitivinicole. Combinando hardware avanzato, software sicuro e soluzioni di connettività, il sistema fornisce un monitoraggio in tempo reale dei parametri vitali del vigneto, garantendo la sicurezza dei dati e ottimizzando la gestione agricola.
 
