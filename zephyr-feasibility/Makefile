@@ -1,5 +1,5 @@
-BOARD   ?=qemu_cortex_m3
-OVERLAY ?=board
+BOARD   ?=esp32s3_devkitc/esp32s3/procpu
+OVERLAY ?=esp32s3
 
 ORANGE  :=\033[38;5;214m
 RESET   :=\033[0m

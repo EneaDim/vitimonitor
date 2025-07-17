@@ -92,7 +92,7 @@ Ogni utente può generare report Excel o PDF personalizzati basati sui dati dell
 
 Per configurare PostgreSQL come database per VitiMonitor, segui questi passi:
 
-1. **Installare PostgreSQL**: `sudo apt-get install postgresql postgresql-contrib`
+1. **Installare PostgreSQL**: `sudo apt-get install libpq-dev postgresql postgresql-contrib`
 
 2. **Start PostgreSQL**: `sudo systemctl start postgresql`
 

@@ -1,0 +1,10 @@
+menu "Mock Sensor Configuration"
+
+config MOCK_SENSOR
+    bool "Enable Mock Sensor"
+    default y
+    help
+      Enable support for the mock sensor driver.
+
+endmenu
+
