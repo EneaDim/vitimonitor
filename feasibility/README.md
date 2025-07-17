@@ -98,4 +98,6 @@ Per configurare PostgreSQL come database per VitiMonitor, segui questi passi:
 
 3. **Setup** : `make setup-db`
 
+If you want to run the postgress db in the terminal: `sudo -u postgres psql`
+
 ---
