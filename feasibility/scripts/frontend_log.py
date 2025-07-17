@@ -5,6 +5,7 @@ import pydeck as pdk
 from datetime import datetime, time
 from streamlit_autorefresh import st_autorefresh
 from common import METRICHE, SOGLIE, check_thresholds
+import random
 
 def render(df, backend_url):
     st.title("📝 Log — VitiMonitor")
@@ -14,10 +15,6 @@ def render(df, backend_url):
         st.session_state.log_dark_mode = True
 
     dark_mode = st.session_state.log_dark_mode
-
-    # Impostazione dei valori statici
-    lat_range = (-90.0, 90.0)
-    lon_range = (-180.0, 180.0)
 
     # Definizione dei sensori disponibili e delle metriche
     sensori_disponibili = sorted(df['sensor_id'].unique())
@@ -94,16 +91,25 @@ def render(df, backend_url):
                 else:
                     st.info("Nessun punto sopra la soglia.")
                 st.text_area("📝 Annotazioni")
-
     # --- Mappa GPS ---
     with tabs[2]:
         st.subheader("🗺️ Mappa GPS")
-        df_gps = df_filtered[['lat', 'lon']].dropna()
-        if not df_gps.empty:
-            midpoint = (df_gps['lat'].mean(), df_gps['lon'].mean())
+    
+        # Genera dati GPS casuali per una lista di sensor_id
+        sensor_ids = [1, 2, 3, 4, 5]  # Esempio di lista di sensor_id
+        gps_data = [
+            {'sensor_id': sensor_id, 'lat': 45.7 + random.uniform(-0.01, 0.01), 'lon': 9.0 + random.uniform(-0.01, 0.01)}
+            for sensor_id in sensor_ids
+        ]
+        
+        # Crea un DataFrame da questi dati
+        df_gps_generated = pd.DataFrame(gps_data)
+    
+        if not df_gps_generated.empty:
+            midpoint = (df_gps_generated['lat'].mean(), df_gps_generated['lon'].mean())
             layer = pdk.Layer(
                 "ScatterplotLayer",
-                data=df_gps,
+                data=df_gps_generated,
                 get_position='[lon, lat]',
                 get_color='[200, 30, 0, 160]',
                 get_radius=50,
@@ -123,7 +129,7 @@ def render(df, backend_url):
     with tabs[3]:
         st.subheader("🧾 Tabella dati")
         if not df_filtered.empty:
-            df_display = df_filtered[['timestamp', 'sensor_id', 'lat', 'lon', 'signature'] + selected_metrics].copy()
+            df_display = df_filtered[['timestamp', 'sensor_id', 'signature'] + selected_metrics].copy()
             df_display['signature'] = df_display['signature'].apply(lambda s: s[:8] + '...' if s else '')
             st.dataframe(df_display, use_container_width=True)
 

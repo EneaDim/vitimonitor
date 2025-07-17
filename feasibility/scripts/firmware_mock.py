@@ -65,9 +65,9 @@ class FirmwareMock:
             requests.post(self.backend_url, json=data)
 
         if anomalies:
-            print(f"{Fore.RED}⚠️ {data['sensor_id']} ANOMALIA su: {', '.join(anomalies)}")
+            print(f"{Fore.RED}⚠️ {data['sensor_id']} ANOMALIA su: {', '.join(anomalies)} | Timestamp: {data['timestamp']}")
         else:
-            print(f"{Fore.GREEN}✅ {data['sensor_id']} OK")
+            print(f"{Fore.GREEN}✅ {data['sensor_id']} OK | Timestamp: {data['timestamp']}")
 
     def run(self):
         while True:
@@ -79,7 +79,8 @@ class FirmwareMock:
                     'humidity_air': sensor.read_humidity_air(),
                     'humidity_soil': sensor.read_humidity_soil(),
                     'luminosity': sensor.read_luminosity(),
-                    'gps': sensor.read_gps(),
+                    #'gps': sensor.read_gps(),
+                    'manual' : False,
                     'timestamp': sensor.timestamp()
                 }
                 data['signature'] = sensor.sign_data(data)

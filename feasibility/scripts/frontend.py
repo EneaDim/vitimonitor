@@ -6,6 +6,8 @@ import frontend_manager as fm
 import frontend_enologo as fe
 import frontend_operatore as fo
 import frontend_log as fl
+import requests
+
 
 # --- CONFIG APP ---
 st.set_page_config(
@@ -32,10 +34,6 @@ st.sidebar.title("🔄 Aggiornamento dati")
 
 if st.sidebar.button("📥 Aggiorna manualmente", key="manual_refresh"):
     st.rerun()
-
-from datetime import datetime, time
-import streamlit as st
-import requests
 
 # Filtro intervallo dati in frontend.py (sidebar)
 st.sidebar.markdown("---")

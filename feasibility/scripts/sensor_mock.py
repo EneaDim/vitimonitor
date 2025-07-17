@@ -34,11 +34,11 @@ class SensorMock:
             return random.choice([0, 200000])
         return base
 
-    def read_gps(self):
-        return {
-            'lat': 45.0 + random.uniform(-0.01, 0.01),
-            'lon': 9.0 + random.uniform(-0.01, 0.01)
-        }
+    #def read_gps(self):
+    #    return {
+    #        'lat': 45.0 + random.uniform(-0.01, 0.01),
+    #        'lon': 9.0 + random.uniform(-0.01, 0.01)
+    #    }
 
     def sign_data(self, data):
         return f"signature_{self.sensor_id}"
