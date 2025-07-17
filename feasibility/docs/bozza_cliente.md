@@ -1,182 +1,169 @@
-## **🍇 Sistema Intelligente di Monitoraggio Vigneti**
-### Precisione. Prevenzione. Qualità.
+# 🍇 **Sistema Intelligente di Monitoraggio Vigneti**  
+**Precisione. Prevenzione. Qualità.**
 
 ---
 
-### **🔹 Cosa Monitora**
+## **🌿 Cos'è VitiMonitor?**
 
-Con sensori su misura, misuriamo in tempo reale:
-
-- 🌡️ Temperatura dell’aria
-- 💦 Umidità dell'aria
-- 💧 Umidità del suolo
-- ☀️ Luminosità solare
-
-### **🧠 Caratteristiche tecniche**
-
-- 📶 Trasmette i dati senza fili
-- 🔒 Non serve internet o cloud, solo PC locale: più privacy e controllo
-- 🔄 Facile da espandere e integrare con droni e satelliti
-- 🖥️ Software completo con 3 interfacce:
-    - Manager
-    - Enologo
-    - Tecnico agricolo
+**VitiMonitor** è il sistema avanzato progettato per il monitoraggio intelligente e sostenibile dei vigneti, integrando tecnologia IoT e analisi predittiva. Il nostro sistema ottimizza la gestione del vigneto, riduce sprechi e costi, migliora la qualità dell'uva e permette decisioni rapide e informate per produttori di vino e agricoltori.
 
 ---
 
-### **❗ Problemi Agricoli Risolti**
+## **🔹 Cosa Monitora**
 
-| Problema| Soluzione|
-|----------------------------------------------|----------------------------------------------------|
-| ❌ Spreco idrico| ✅ Irrigazione ottimizzata in base ai dati reali|
-| ❌ Fertilizzazione inefficace | ✅ Nutrizione mirata su misura, per zona|
-| ❌ Trattamenti eseguiti “a calendario”| ✅ Interventi solo se necessari, con dati oggettivi |
-| ❌ Nessuna tracciabilità climatica storica| ✅ Dati registrati e accessibili localmente |
-| ❌ Stress non rilevato (idrico, termico, ecc.)| ✅ Monitoraggio continuo e avvisi di anomalia |
+Con sensori personalizzati, **VitiMonitor** raccoglie e analizza dati cruciali per ogni fase della vita del vigneto:
 
----
+- 🌡️ **Temperatura dell'aria**
+- 💦 **Umidità dell'aria**
+- 💧 **Umidità del suolo**
+- ☀️ **Luminosità solare**
 
-### **🟩 Vantaggi Pratici per le Figure Chiave**
-
-#### 👨‍💼 Manager / Direttore
-- Controllo centralizzato e visione d’insieme
-- Riduzione costi di gestione (acqua, trattamenti, energia)
-- Sistema indipendente da cloud
-- Estendibilità con nuovi moduli, sensori o software
-
-#### 🍇 Enologo / Responsabile Qualità
-- Analisi precisa del microclima in ogni zona del vigneto
-- Supporto per scelte agronomiche e date di vendemmia
-- Correlazione tra qualità dell'uva e dati ambientali
-- Tracciabilità storica per confrontare annate
-
-#### 🌱 Tecnico di campo / Operatore agricolo
-- Sapere dove e quando irrigare davvero
-- Ottimizzare l’uso di fertilizzanti e trattamenti
-- Prevenzione di malattie e stress vegetativi
-- Interfaccia semplice e utilizzabile anche sul campo
+Ogni dato raccolto viene elaborato in tempo reale per garantire interventi tempestivi e informati.
 
 ---
 
-### **🔄 Futuro Pronto – Scalabilità Totale**
+## **🧠 Caratteristiche Tecniche**
 
-Il sistema è già compatibile con:
-
-- 🚁 **Droni** (es. NDVI per stress idrico o clorofilliano)
-- 🛰️ **Immagini satellitari** per confronti macro e climatologici
-- 🧠 **AI predittiva** per malattie, produzione, carenze nutrizionali
-- 📡 **Integrazione API** con gestionali agricoli e mappe GIS
-
----
-
-### **💶 Investimento Intelligente**
-
-- 🔧 **Sistema su misura** con sensori progettati da zero
-- 💻 Nessun canone cloud: **tutto gestito in sede**
-- 🔁 Abbonamento **software leggero e trasparente**
-- 📈 Ritorni sull'investimento rapidi grazie a **risparmio risorse e aumento efficienza**
+- 📡 **Trasmissione wireless** tramite LoRaWAN per comunicazioni sicure e a lungo raggio.
+- 🔒 **Nessuna necessità di cloud**: la privacy è garantita con un sistema che funziona su PC locale.
+- 🔄 **Espandibile**: facile integrazione con droni, satelliti e moduli aggiuntivi.
+- 🖥️ **Software completo**: tre interfacce dedicate a ruoli chiave:
+    - **Manager**: Analisi economica, distribuzione risorse, gestione rischio.
+    - **Enologo**: Correlazione tra qualità e dati ambientali.
+    - **Tecnico Agricolo**: Monitoraggio in tempo reale, gestione operativa.
 
 ---
 
-### **💸 Costi e Prezzo – Dettaglio Offerta Commerciale**
+## **❗ Problemi Agricoli Risolti**
 
-#### 📦 Componenti inclusi
-
-🔢 **5 sensori ambientali personalizzati**
-  - Misurano: temperatura aria, umidità aria, umidità suolo, luminosità
-  - Comunicazione via LoRaWAN
-  - Progettati su misura, assemblati su PCB dedicata
-
-🏠 **1 Gateway**
-  - Riceve i dati dai sensori
-  - Configurazione personalizzata per il terreno del cliente
-  - Connessione diretta con il PC locale
-
-💻 **Software completo**
-  - Installato su PC locale, nessun costo di cloud
-  - 3 Interfacce: Manager, Enologo, Tecnico agricolo
-  - Dashboard intuitive e gestione storica dei dati
+| **Problema**                    | **Soluzione VitiMonitor**                                          |
+|----------------------------------|--------------------------------------------------------------------|
+| ❌ **Spreco idrico**             | ✅ **Irrigazione ottimizzata** in tempo reale, riducendo i consumi |
+| ❌ **Fertilizzazione inefficace** | ✅ **Nutrizione mirata** per zona, basata su dati reali            |
+| ❌ **Trattamenti "a calendario"**| ✅ **Interventi mirati** solo quando strettamente necessario       |
+| ❌ **Nessuna tracciabilità storica** | ✅ **Dati storici sempre accessibili**, per una gestione consapevole|
+| ❌ **Stress non rilevato**       | ✅ **Monitoraggio continuo**, allarmi in tempo reale per anomalie  |
 
 ---
 
-#### 💰 Dettaglio costi e prezzi
+## **🟩 Vantaggi per le Figure Chiave**
 
-| Voce                        | Costo per me | Prezzo al cliente | Motivazione |
-|-----------------------------|--------------|-------------------|-------------|
-| 🔧 **Sensore**              | 80 € cad     | **130 € cad**     | Installazione e Configurazione |
-| 📡 **Gateway**              | 160 €        | **220 €**         | Installazione e Configurazione |
+#### 👨‍💼 **Manager / Direttore**
+- **Visione centralizzata** dei dati per decisioni informate.
+- **Riduzione costi**: acqua, trattamenti, energia, grazie a un sistema efficiente.
+- **Sistema indipendente da cloud**: maggiore sicurezza e controllo.
+- **Scalabilità**: facilmente integrabile con altri moduli e tecnologie.
 
----
+#### 🍇 **Enologo / Responsabile Qualità**
+- **Analisi dettagliata** del microclima, per ottimizzare le pratiche agronomiche.
+- **Supporto nelle decisioni** riguardanti la vendemmia e il trattamento dell'uva.
+- **Tracciabilità storica** per analisi comparative tra annate.
 
-#### 💻 Pacchetti Software – Flessibili e Scalabili
-
-Il software gira su PC locale del cliente, senza cloud esterno. Ogni pacchetto include aggiornamenti e supporto tecnico di base.
-
-La motivazione per il pagamento software è il lavoro svolto per crearlo e al lavoro giornaliero per gli aggiornamenti.
-
-| Pacchetto     | Sensori supportati | Funzionalità principali                                              | Prezzo mensile |
-|---------------|--------------------|----------------------------------------------------------------------|----------------|
-| **START**     | fino a 5 sensori   | Dashboard base, dati in tempo reale, storico breve                   | 20 €           |
-| **STANDARD**  | fino a 10 sensori  | Dashboard avanzata, storico completo, report PDF                     | 25 €           |
-| **PRO**       | fino a 20 sensori  | Allarmi automatici, confronto tra zone, esportazione CSV             | 30 €           |
-| **ENTERPRISE**| oltre 20 sensori   | Supporto multi-utente, gestione avanzata zone, API, backup automatici| 40 €           |
-| **AI PLUS** *(futuro)* | qualsiasi numero | Modelli predittivi AI, previsioni malattie, analisi rese            | 50 €           |
-
-🧩 **Pacchetti personalizzati** disponibili per esigenze specifiche.
-
-🛠️ **Supporto all’integrazione** con droni, immagini satellitari e software esterni (su richiesta).
-
-💡 Tutti i pacchetti sono **modulari**: il cliente può partire da uno e fare upgrade in qualsiasi momento.
-
-#### **✅ Totale Offerta START**
-
-- 🛠️ Hardware completo (5 sensori + gateway): **870 € una tantum**
-- 💻 Software START: **20 €/mese**
+#### 🌱 **Tecnico Agricolo / Operatore**
+- **Controllo preciso** su quando e dove irrigare e fertilizzare.
+- **Prevenzione malattie** e stress idrici grazie a dati accurati e in tempo reale.
+- **Interfaccia semplice**, ottimizzata per uso sul campo.
 
 ---
 
-### **📈 Ritorni sugli investimenti**
+## **🔄 Scalabilità e Futuro del Sistema**
 
-#### Scenario  
-- Vigneto 10 ettari, irrigazione e trattamenti standard  
-- Obiettivo: ottimizzare acqua, fertilizzanti, lavoro e migliorare qualità
+VitiMonitor è pronto per evolversi con l'integrazione di tecnologie avanzate:
 
-#### Risparmi stimati
-
-| Voce                | Risparmio annuo (€)       | Note                             |
-|---------------------|---------------------------|---------------------------------|
-| Acqua               | 1.500 - 2.000             | 20-30% risparmio grazie a irrigazione mirata |
-| Trattamenti e fertilizzanti | 900                 | 15-25% riduzione interventi chimici          |
-| Ore di lavoro       | 800                       | 20% riduzione monitoraggio e gestione        |
-| **Totale stimato**  | **3.200 - 3.700 €**       | Risparmio complessivo annuo                  |
-
-#### Investimento
-
-| Voce                | Costo (€)                 |
-|---------------------|---------------------------|
-| Hardware + installazione | 870                   |
-| Software (1 anno)    | 240 (20 €/mese)           |
-| **Totale 1° anno**   | **1.110**                 |
-
-#### Ritorni investimento
-
-- Ritorno investimento > 200% entro il primo anno  
-- Risparmio netto superiore all'investimento in circa 6 mesi  
-- Benefici qualitativi: miglior gestione stress, qualità uva, pianificazione vendemmia
+- 🚁 **Droni**: Analisi del NDVI per monitoraggio avanzato dello stress idrico e clorofilliano.
+- 🛰️ **Immagini satellitari**: Analisi e confronti climatologici su larga scala.
+- 🧠 **Intelligenza Artificiale**: Modelli predittivi per malattie, produttività, e carenze nutrizionali.
+- 📡 **API Integration**: Connessione con sistemi agricoli esistenti, GIS e software di gestione.
 
 ---
 
-**Conclusione:**  
-Un investimento accessibile che garantisce risparmi significativi e sostenibilità operativa per il vigneto.
+## **💶 Investimento Intelligente**
+
+VitiMonitor è una soluzione **adatta a ogni vigneto**, che offre un ritorno rapido sull'investimento:
+
+- **Sistemi personalizzati** con sensori progettati su misura per il tuo vigneto.
+- **No costi di cloud**: tutta la gestione avviene in sede, riducendo i costi a lungo termine.
+- **Software con abbonamento trasparente** per un facile upgrade e supporto continuo.
+- **Risparmio su risorse** e aumento dell'efficienza operativa garantiti.
 
 ---
 
-### 📞 Contatti
+## **💸 Offerta Commerciale**
 
-**Progettazione e sviluppo a cura di:**
-**Enea Dimroci**
-📧 eneadim95@gmail.com
+### **Componenti inclusi**
+
+- 🔢 **5 sensori ambientali personalizzati**:
+  - Misurano: temperatura, umidità aria, umidità suolo, luminosità.
+  - Comunicazione via **LoRaWAN**.
+  - **PCB personalizzati** progettati per il tuo vigneto.
+  
+- 🏠 **1 Gateway**:
+  - Connessione locale con il PC del cliente.
+  - Configurazione personalizzata in base al terreno.
+
+- 💻 **Software completo**:
+  - Gestito **localmente**, senza costi aggiuntivi per il cloud.
+  - Interfacce per **Manager, Enologo, Tecnico agricolo**.
+  - Visualizzazione dei dati in tempo reale e storicizzazione.
+
+---
+
+### **💰 Dettaglio Costi e Prezzi**
+
+| **Voce**             | **Prezzo per me** | **Prezzo al cliente** | **Motivazione** |
+|----------------------|-------------------|-----------------------|-----------------|
+| 🔧 **Sensore**        | 80 € cad          | **130 € cad**         | Installazione e Configurazione |
+| 📡 **Gateway**        | 160 €             | **220 €**             | Installazione e Configurazione |
+
+---
+
+### **💻 Pacchetti Software – Flessibili e Scalabili**
+
+Il software, che gira sul PC locale del cliente, è modulare e può essere personalizzato a seconda delle esigenze:
+
+| **Pacchetto**     | **Sensori supportati** | **Funzionalità principali**                                      | **Prezzo mensile** |
+|-------------------|------------------------|------------------------------------------------------------------|--------------------|
+| **START**         | fino a 5 sensori       | Dashboard base, dati in tempo reale, storico breve               | 20 €               |
+| **STANDARD**      | fino a 10 sensori      | Dashboard avanzata, storico completo, report PDF                 | 25 €               |
+| **PRO**           | fino a 20 sensori      | Allarmi automatici, confronto zone, esportazione CSV             | 30 €               |
+| **ENTERPRISE**    | oltre 20 sensori       | Multi-utente, gestione avanzata zone, API, backup automatici     | 40 €               |
+| **AI PLUS** *(futuro)* | qualsiasi numero   | Modelli predittivi AI, previsioni malattie, analisi rese         | 50 €               |
+
+**Pacchetti personalizzati** disponibili su richiesta. Supporto per **integrazione con droni, immagini satellitari** e software esterni.
+
+---
+
+### **📈 Ritorni sugli Investimenti**
+
+Il sistema offre un ritorno immediato grazie all'ottimizzazione delle risorse e alla riduzione dei costi operativi. Ecco una stima per un vigneto di **10 ettari**:
+
+| **Voce**                | **Risparmio annuo (€)** | **Note**                        |
+|-------------------------|-------------------------|---------------------------------|
+| **Acqua**               | 1.500 - 2.000           | 20-30% risparmio grazie all'irrigazione mirata |
+| **Trattamenti e Fertilizzanti** | 900             | 15-25% di riduzione grazie all'uso mirato |
+| **Ore di lavoro**       | 800                     | 20% di riduzione nel monitoraggio e gestione |
+
+**Risparmio complessivo annuo**: **3.200 - 3.700 €**
+
+#### **Investimento iniziale**:
+- **Hardware + installazione**: 870 €
+- **Software (1 anno)**: 240 € (20 €/mese)
+
+**Totale 1° anno**: **1.110 €**
+
+**Ritorno sull'investimento**: >200% entro il primo anno, con il ritorno netto che si materializza in circa 6 mesi.
+
+---
+
+## **📞 Contatti**
+
+**Progettazione e sviluppo a cura di:**  
+**Enea Dimroci**  
+📧 [enea.dim95@gmail.com](mailto:enea.dim95@gmail.com)  
 📱 +39 3801529102
 
 ---
+
+**Conclusione**: Un investimento accessibile che porta a risparmi significativi, aumento dell'efficienza operativa e miglioramento della qualità del prodotto finale.
+
 
