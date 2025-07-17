@@ -1,10 +1,10 @@
-# **AgriTrust Node** - Nodo Agricolo Sicuro per Viticoltura
+# **Vitimonitor** - Nodo Agricolo Sicuro per Viticoltura
 
-**AgriTrust Node** è un sistema integrato progettato per il monitoraggio intelligente e sicuro delle coltivazioni vitivinicole. Combinando hardware avanzato, software sicuro e soluzioni di connettività, il sistema fornisce un monitoraggio in tempo reale dei parametri vitali del vigneto, garantendo la sicurezza dei dati e ottimizzando la gestione agricola.
+**Vitimonitor** è un sistema integrato progettato per il monitoraggio intelligente e sicuro delle coltivazioni vitivinicole. Combinando hardware avanzato, software sicuro e soluzioni di connettività, il sistema fornisce un monitoraggio in tempo reale dei parametri vitali del vigneto, garantendo la sicurezza dei dati e ottimizzando la gestione agricola.
 
 ## 🌱 Obiettivo del Progetto
 
-Il progetto **AgriTrust Node** si propone di costruire un sistema che combina sensori avanzati, sicurezza hardware e soluzioni di comunicazione affidabili per il monitoraggio della coltivazione dell'uva. Il sistema si concentra su:
+Il progetto **Vitimonitor** si propone di costruire un sistema che combina sensori avanzati, sicurezza hardware e soluzioni di comunicazione affidabili per il monitoraggio della coltivazione dell'uva. Il sistema si concentra su:
 
 - **Raccolta dati sensoriali locali**: Umidità, temperatura, luce, GPS, nutrienti, e altro ancora.
 - **Sicurezza dei dati**: Firma digitale dei dati con identità hardware basata su OpenTitan, per garantire integrità e sicurezza.
@@ -14,7 +14,7 @@ Il progetto **AgriTrust Node** si propone di costruire un sistema che combina se
 
 ## 🔧 Struttura del Progetto
 
-Il progetto **AgriTrust Node** è composto da diverse componenti hardware e software, integrate in un'architettura solida e scalabile.
+Il progetto **Vitimonitor** è composto da diverse componenti hardware e software, integrate in un'architettura solida e scalabile.
 
 ### Componenti principali:
 
@@ -108,5 +108,5 @@ Tutta la documentazione di progetto, inclusa la descrizione tecnica, il design d
 
 ---
 
-**AgriTrust Node** è la soluzione definitiva per il monitoraggio e la gestione sicura dei vigneti, combinando tecnologia avanzata, sicurezza hardware e un'analisi intelligente dei dati. Con il nostro sistema, i viticoltori possono prendere decisioni più informate, migliorando la qualità del vino e ottimizzando le risorse.
+**Vitimonitor** è la soluzione definitiva per il monitoraggio e la gestione sicura dei vigneti, combinando tecnologia avanzata, sicurezza hardware e un'analisi intelligente dei dati. Con il nostro sistema, i viticoltori possono prendere decisioni più informate, migliorando la qualità del vino e ottimizzando le risorse.
 

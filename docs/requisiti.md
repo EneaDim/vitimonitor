@@ -1,8 +1,8 @@
-# Documento Requisiti di Sistema (SRS) – AgriTrust Node
+# Documento Requisiti di Sistema (SRS) – Vitimonitor
 
 ## 1. Introduzione
 
-**AgriTrust Node** è un sistema embedded progettato per l’agricoltura di precisione, con particolare attenzione alla sicurezza e affidabilità. Integra il Root of Trust OpenTitan per garantire autenticità, integrità e riservatezza dei dati raccolti da sensori ambientali, e supporta comunicazioni sicure verso backend remoti per analisi e tracciabilità.
+**Vitimonitor** è un sistema embedded progettato per l’agricoltura di precisione, con particolare attenzione alla sicurezza e affidabilità. Integra il Root of Trust OpenTitan per garantire autenticità, integrità e riservatezza dei dati raccolti da sensori ambientali, e supporta comunicazioni sicure verso backend remoti per analisi e tracciabilità.
 
 ## 2. Scopo
 
