@@ -89,15 +89,15 @@ delete-db:
 	if [ -z "$$DB_EXISTS" ]; then \
 		echo "Il database $(DB_NAME) non esiste."; \
 	else \
-		echo "Revocando i privilegi dell'utente PostgreSQL $(DB_USER)..."; \
-		sudo -u postgres psql -c "REVOKE ALL PRIVILEGES ON SCHEMA public FROM $(DB_USER);" && \
-		sudo -u postgres psql -c "REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM $(DB_USER);" && \
-		sudo -u postgres psql -c "REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM $(DB_USER);" && \
-		sudo -u postgres psql -c "REVOKE ALL PRIVILEGES ON DATABASE $(DB_NAME) FROM $(DB_USER);" && \
-		echo "Tutti i privilegi revocati per l'utente $(DB_USER)."; \
+		echo "Reassegnando la proprietà degli oggetti all'utente admin_user..."; \
+		sudo -u postgres psql -d $(DB_NAME) -c "REASSIGN OWNED BY $(DB_USER) TO admin_user;" && \
+		echo "Proprietà degli oggetti riassegnate."; \
+		echo "Rimuovendo i privilegi dell'utente $(DB_USER)..."; \
+		sudo -u postgres psql -d $(DB_NAME) -c "DROP OWNED BY $(DB_USER);" && \
+		echo "Privilegi revocati."; \
 		echo "Rimuovendo gli oggetti associati all'utente $(DB_USER)..."; \
-		sudo -u postgres psql -c "DROP OWNED BY $(DB_USER) CASCADE;" && \
-		echo "Tutti gli oggetti associati all'utente $(DB_USER) sono stati rimossi."; \
+		sudo -u postgres psql -d $(DB_NAME) -c "DROP OWNED BY $(DB_USER) CASCADE;" && \
+		echo "Oggetti associati rimossi."; \
 		echo "Eliminando il ruolo $(DB_USER)..."; \
 		sudo -u postgres psql -c "DROP ROLE IF EXISTS $(DB_USER);" && \
 		echo "Ruolo $(DB_USER) eliminato."; \

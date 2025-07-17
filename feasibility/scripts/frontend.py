@@ -40,11 +40,22 @@ import requests
 # Filtro intervallo dati in frontend.py (sidebar)
 st.sidebar.markdown("---")
 st.sidebar.title("📈 Intervallo dati")
+# Ensure date_range is a tuple of two elements, even if the user selects one date
 date_range = st.sidebar.date_input(
     "Intervallo date",
     value=(datetime.today().date(), datetime.today().date()),  # default today
     key="log_date_range"
 )
+
+# Check if the date_range is a tuple of length 1 or 2
+if isinstance(date_range, tuple) and len(date_range) == 1:
+    date_range = (date_range[0], date_range[0])  # If only one date is selected, set it as both start and end date
+
+#date_range = st.sidebar.date_input(
+#    "Intervallo date",
+#    value=(datetime.today().date(), datetime.today().date()),  # default today
+#    key="log_date_range"
+#)
 
 start_time = st.sidebar.time_input(
     "Orario inizio",

@@ -5,6 +5,7 @@ import pandas as pd
 import requests
 from fpdf import FPDF
 from common import check_thresholds
+import time
 
 def render(df, backend_url):
     st.header("👷 Operatore — Gestione Anomalie e Pianificazione Attività")
@@ -72,22 +73,31 @@ def render(df, backend_url):
         confirm_button = st.button(f"✅ Conferma completamento attività: {selected_row['attività']}")
 
         if confirm_button:
-            # Mostra un messaggio per chiedere la conferma
-            st.write(f"Sei sicuro di voler completare l'attività: {selected_row['attività']}?")
+            # Modifica lo stato dell'attività
+            activities_df.loc[selected_activity, 'status'] = 'Completata'
+            # Rimuovi l'attività completata dalla lista
+            activities_df = activities_df[activities_df['status'] != 'Completata']
+            st.success(f"Attività in zona {selected_row['zona']} completata.")
+            time.sleep(1)
+            # Ricarica automaticamente la pagina per aggiornare la tabella
+            st.rerun()
+        #if confirm_button:
+        #    # Mostra un messaggio per chiedere la conferma
+        #    st.write(f"Sei sicuro di voler completare l'attività: {selected_row['attività']}?")
 
-            # Usa un altro pulsante per confermare il completamento dell'attività
-            complete_button = st.button("✅ Completa attività")
+        #    # Usa un altro pulsante per confermare il completamento dell'attività
+        #    complete_button = st.button("✅ Completa attività")
 
-            if complete_button:
-                # Modifica lo stato dell'attività
-                activities_df.loc[selected_activity, 'status'] = 'Completata'  # Modifica lo stato dell'attività
+        #    if complete_button:
+        #        # Modifica lo stato dell'attività
+        #        activities_df.loc[selected_activity, 'status'] = 'Completata'  # Modifica lo stato dell'attività
 
-                # Rimuovi l'attività completata dalla lista
-                activities_df = activities_df[activities_df['status'] != 'Completata']
-                st.success(f"Attività in zona {selected_row['zona']} completata.")
+        #        # Rimuovi l'attività completata dalla lista
+        #        activities_df = activities_df[activities_df['status'] != 'Completata']
+        #        st.success(f"Attività in zona {selected_row['zona']} completata.")
 
-                # Ricarica automaticamente la pagina per aggiornare la tabella
-                st.rerun()
+        #        # Ricarica automaticamente la pagina per aggiornare la tabella
+        #        st.rerun()
 
     # Mostra la tabella delle attività
     st.dataframe(activities_df)
