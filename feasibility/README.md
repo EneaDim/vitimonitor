@@ -1,171 +1,101 @@
-# VitiMonitor - Sistema di Monitoraggio dei Vigneti
+# VitiMonitor - Monitoraggio e Analisi dei Dati dei Vigneti
 
-VitiMonitor è una piattaforma per il monitoraggio in tempo reale dei vigneti, che raccoglie dati dai sensori ambientali distribuiti nelle zone di un vigneto. La piattaforma fornisce un dashboard interattivo, gestisce anomalie nei dati e permette di generare report dettagliati. Il sistema è composto da un backend in **FastAPI**, un frontend in **Streamlit**, e un firmware mock che simula i sensori.
+**VitiMonitor** è un sistema integrato per il monitoraggio in tempo reale e l'analisi dei dati provenienti dai sensori nei vigneti. Il sistema raccoglie dati su temperatura, umidità dell'aria, umidità del suolo, luminosità e posizione GPS, e li elabora per fornire analisi avanzate sullo stato del vigneto, rilevamento di anomalie e pianificazione delle attività.
 
-## Struttura del Sistema
+Questo sistema include:
+- Un **backend FastAPI** per gestire le richieste API e salvare i dati nel database.
+- Un **mock firmware** per simulare i sensori.
+- Un **frontend Streamlit** che fornisce una visualizzazione interattiva dei dati.
 
-Il sistema è suddiviso in vari componenti, ognuno dei quali si occupa di una parte specifica del monitoraggio e dell'elaborazione dei dati:
+## 🚀 Struttura del Progetto
 
-- **Backend (FastAPI)**: gestisce la ricezione dei dati dai sensori e li salva nel database SQLite.
-- **Frontend (Streamlit)**: visualizza i dati raccolti dai sensori in tempo reale e fornisce strumenti per l'analisi.
-- **Firmware Mock**: simula il comportamento dei sensori, generando dati e inviandoli al backend.
-- **Sensor Mock**: simula singoli sensori, generando letture di temperatura, umidità, luminosità e GPS.
+Il progetto include i seguenti file principali:
 
-## Requisiti
+- **`backend.py`**: Il backend FastAPI per gestire le richieste API, salvare i dati nel database e connettersi al broker MQTT per ricevere i dati dai sensori.
+- **`sensor_mock.py`**: Il mock di sensori che genera dati simulati per temperatura, umidità, luminosità e posizione GPS.
+- **`firmware_mock.py`**: Il firmware mock che simula l'acquisizione dei dati dai sensori e li invia al backend.
+- **`frontend.py`**: Il frontend Streamlit che visualizza i dati in tempo reale e fornisce strumenti di analisi per manager, enologi e operatori.
+- **`frontend_manager.py, frontend_enologo.py, frontend_operatore.py, frontend_log.py`**: Moduli frontend per visualizzare dati in base al ruolo dell'utente (Manager, Enologo, Operatore, Log).
+  
+## 📦 Prerequisiti
 
-- Python >= 3.8
-- FastAPI
-- Uvicorn (per il backend)
-- Streamlit (per il frontend)
-- SQLite (per il database)
-- MQTT (opzionale, per l'invio dei dati tramite MQTT)
-- librerie come `requests`, `paho.mqtt`, `colorama`, `plotly`, `fpdf`, `pandas` e altre incluse nel file `requirements.txt`
+Assicurati di avere i seguenti strumenti installati:
 
-## Installazione e Configurazione
+- **Python 3.x**
+- **pip** per installare i pacchetti Python
+- **MQTT broker** (se usato)
+- **Make** per eseguire i comandi nel Makefile
 
-### 1. Creazione dell'ambiente virtuale
+## ⚙️ Setup e Avvio del Progetto
 
-Esegui il comando seguente per creare e attivare l'ambiente virtuale:
-```bash
-make init
-```
+### 1. Creazione dell'ambiente virtuale e installazione delle dipendenze
 
-Questo comando:
-- Crea un ambiente virtuale `.venv`
-- Installa tutte le dipendenze elencate nel file `requirements.txt`
-- Crea le cartelle necessarie e il file di configurazione `config.yml`
+Per creare l'ambiente virtuale e installare tutte le dipendenze necessarie, segui le istruzioni nel Makefile per inizializzare l'ambiente e configurare il progetto.
 
-### 2. Attivazione dell'ambiente virtuale
+Questo comando: `make init`
+- Crea un ambiente virtuale.
+- Installa le dipendenze da `requirements.txt`.
+- Imposta le cartelle necessarie.
 
-Per attivare l'ambiente virtuale, usa il comando:
-
-```bash
-make venv
-```
-
-### 3. Aggiornamento dei pacchetti
-
-Se vuoi aggiornare i pacchetti installati e generare un nuovo `requirements.txt`, usa:
-
-```bash
-make freeze
-```
-
-### 4. Configurazione del sistema
-
-Il sistema è configurabile tramite il file `config.yml`. Puoi visualizzare la configurazione corrente con:
-
-```bash
-make show-config 
-```
-
-Per aggiornare un valore nel file di configurazione, usa il comando:
-
-```bash
-make update-config KEY=<nome_chiave> VALUE=<valore>
-```
-Ad esempio, per aggiornare l'intervallo di invio dei dati a 10 secondi:
-```bash
-make update-config KEY=send_interval VALUE=10
-```
-
-### 5. Avvio dei servizi
-
-Per avviare il backend, il firmware e il frontend separatamente, puoi utilizzare i seguenti comandi:
-
-- **Avvia il backend (FastAPI)**:
-    ```
-    make backend
-    ```
-
-- **Avvia il firmware mock**:
-    ```
-    make firmware
-    ```
-
-- **Avvia il frontend (Streamlit)**:
-    ```
-    make frontend
-    ```
-
-Per avviare tutti i servizi insieme in una sessione tmux, puoi utilizzare il comando:
-
-```bash
-make run-all
-```
-
-Questo comando avvierà il backend, il firmware e il frontend in una sessione tmux separata.
-
-### 6. Test
-
-Per eseguire i test automatici del sistema, utilizza:
-
-```bash
-make test
-```
-
-### 7. Pulizia
-
-Per rimuovere file temporanei e cache, utilizza:
+Ora attiva l'ambiente virtuale con : `source .venv/bin/activate`
 
 
-```bash
-make clean
-```
+### 2. Avvio dei Servizi
 
-Per eliminare il file del database SQLite, usa:
+Una volta configurato l'ambiente, puoi avviare i vari servizi del sistema separatamente o tutti insieme.
 
+- **Avviare il backend**: Avvia il servizio backend basato su FastAPI.
+    - `make backend`
+- **Avviare il firmware mock**: Simula il comportamento del firmware per raccogliere dati dai sensori.
+    - `make firmware`
+- **Avviare il frontend**: Avvia il servizio frontend utilizzando Streamlit.
+    - `make frontend`
+- **Avviare tutti i servizi contemporaneamente**: Avvia backend, firmware e frontend in una sessione tmux.
+    - `make run-all`
 
-```bash
-make cleandb
-```
+### 3. Interagire con il Sistema
 
-## Funzionalità del Sistema
+Il sistema è composto da tre principali interfacce utente:
 
-### Backend
+- **👨‍💼 Manager**: Permette di visualizzare i KPI economici, la distribuzione delle misurazioni e il rischio nelle zone.
+- **🍷 Enologo**: Consente di visualizzare l'indice di qualità per zona e le distribuzioni di variabili come la temperatura e l'umidità.
+- **👷 Operatore**: Permette di gestire le anomalie rilevate, pianificare attività correttive e generare report.
 
-- **API di Ricezione Dati**: il backend riceve i dati dei sensori tramite una richiesta `POST` alla rotta `/data`. I dati vengono validati e memorizzati in un database SQLite.
-- **API di Visualizzazione Dati**: è possibile ottenere tutti i dati raccolti tramite una richiesta `GET` alla rotta `/data`.
-- **Gestione Anomalie**: il sistema può rilevare anomalie nei dati dei sensori, come temperature troppo alte o basse, e generare notifiche o segnalarle all'utente.
+Ogni interfaccia offre funzionalità specifiche:
+- **Manager**: Analisi economiche, distribuzione dei parametri nel vigneto e valutazione del rischio.
+- **Enologo**: Indice di qualità per zona, calcolo della salute delle piante in base ai parametri misurati.
+- **Operatore**: Gestione delle anomalie, pianificazione delle attività e visualizzazione delle misurazioni manuali.
 
-### Frontend
+### 4. Test e Linting
 
-Il frontend utilizza Streamlit per creare una dashboard che visualizza i dati dei sensori in tempo reale, mostrando metriche come la temperatura, l'umidità dell'aria e del suolo, e la luminosità. Offre anche grafici e strumenti di analisi per identificare tendenze e anomalie nei dati.
+Per eseguire i test automatici e il linting del codice, utilizza gli strumenti descritti nel Makefile per verificare il corretto funzionamento del sistema e la qualità del codice.
 
-### Firmware Mock
+### 5. Pulizia del Progetto
 
-Il firmware mock simula il comportamento dei sensori, generando periodicamente dati e inviandoli al backend tramite richieste HTTP o MQTT, in base alla configurazione.
+Per rimuovere i file temporanei, le cache e altre risorse non necessarie, segui le istruzioni nel Makefile per pulire l'ambiente e ripristinare lo stato del progetto.
 
-### Report e Pianificazione
+## 📝 Configurazione
 
-Il sistema consente di generare report in formato PDF ed Excel contenenti informazioni su anomalie, attività pianificate e dati storici. È anche possibile pianificare attività correttive per gestire le anomalie rilevate.
+Le configurazioni del progetto sono gestite tramite il file `config.yml`. Puoi visualizzare la configurazione corrente e modificarla direttamente nel file di configurazione. Il Makefile ti permette anche di aggiornare facilmente un valore nella configurazione, come il tempo di invio dei dati o altre impostazioni.
 
-## Configurazione Avanzata
+## 📈 Analisi e Report
 
-Il file di configurazione `config.yml` contiene vari parametri che definiscono il comportamento del sistema, come:
-- L'URL del backend
-- La configurazione dei sensori e delle zone
-- Le soglie per rilevare anomalie
+Ogni utente può generare report Excel o PDF personalizzati basati sui dati delle anomalie o delle attività pianificate. Usa i bottoni nel frontend per scaricare il report richiesto.
 
-Esempio di configurazione:
+---
 
-```yaml
-backend_url: "http://localhost:8000/data"
-use_mqtt: true
-mqtt_broker: "localhost"
-mqtt_port: 1883
-mqtt_topic: "sensor/data"
-sensors_per_zone: 2
-send_interval: 5
-zones:
-  - "zone_north"
-  - "zone_south"
-soglie:
-  temperature: [10, 35]
-  humidity_air: [30, 70]
-  humidity_soil: [20, 50]
-```
+**VitiMonitor** fornisce un sistema completo per il monitoraggio e la gestione dei dati dei vigneti. Grazie all'interfaccia grafica, ai servizi backend e alle simulazioni dei sensori, offre una soluzione potente per gestire in tempo reale la salute e l'economia del vigneto.
 
-## Conclusioni
+---
 
-VitiMonitor offre una soluzione potente per il monitoraggio e la gestione dei vigneti, combinando tecnologie moderne come FastAPI, Streamlit e MQTT per raccogliere, visualizzare e analizzare i dati dei sensori in tempo reale. Può essere facilmente esteso e personalizzato per soddisfare le esigenze specifiche di qualsiasi azienda agricola.
+## 🗄️ Setup del Database PostgreSQL
+
+Per configurare PostgreSQL come database per VitiMonitor, segui questi passi:
+
+1. **Installare PostgreSQL**: `sudo apt-get install postgresql postgresql-contrib`
+
+2. **Start PostgreSQL**: `sudo systemctl start postgresql`
+
+3. **Setup** : `make setup-db`
+
+---
