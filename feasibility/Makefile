@@ -67,7 +67,7 @@ help:
 	@echo "  $(COLOR)make cleandb$(RESET)          - Elimina il file del database SQLite"
 	@echo ""
 
-setup-postgres:
+setup-db:
 	$(ECHO) Configurando PostgreSQL...
 	@sudo -u postgres psql -c "SELECT 1 FROM pg_database WHERE datname = '$(DB_NAME)'" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE $(DB_NAME);"
 	@sudo -u postgres psql -c "SELECT 1 FROM pg_roles WHERE rolname = '$(DB_USER)'" | grep -q 1 || sudo -u postgres psql -c "CREATE ROLE $(DB_USER) WITH LOGIN PASSWORD '$(DB_PASSWORD)';"
