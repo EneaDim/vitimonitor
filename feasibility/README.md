@@ -1,4 +1,4 @@
-# VitiMonitor - Monitoraggio e Analisi dei Dati dei Vigneti
+# 🍇 VitiMonitor - Monitoraggio e Analisi dei Dati dei Vigneti
 
 **VitiMonitor** è un sistema integrato per il monitoraggio in tempo reale e l'analisi dei dati provenienti dai sensori nei vigneti. Il sistema raccoglie dati su temperatura, umidità dell'aria, umidità del suolo, luminosità e posizione GPS, e li elabora per fornire analisi avanzate sullo stato del vigneto, rilevamento di anomalie e pianificazione delle attività.
 
