@@ -7,7 +7,7 @@ RESET   :=\033[0m
 all:: config build run
 
 config:
-	cmake -S . -B build -DBOARD=$(BOARD) -DDTC_OVERLAY_FILE=boards/$(OVERLAY).overlay
+	cmake -S . -B build -DBOARD=$(BOARD)
 
 menuconfig: config
 	cmake --build build --target menuconfig

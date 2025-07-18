@@ -1,41 +1,23 @@
-/ {
-    aliases {
-        dht1 = &dht22_sensor;
-        soil-moisture = &soil_moisture_sensor;
-        bh1750 = &bh1750_sensor;
-    };
-};
-
-&i2c0 {
+&spi1 {
     status = "okay";
+    flash = <&flash>;
 
-    dht22_sensor: dht22@40 {
-        compatible = "mock,sensor";
-        reg = <0x40>;
-        label = "DHT22";
-        status = "okay";
-    };
-};
-
-&spi2 {
-    status = "okay";
-
-    bh1750_sensor: bh1750@0 {
-        compatible = "mock,sensor";
+    lora: lora@0 {
+        compatible = "lora,spi";
         reg = <0>;
-        label = "BH1750";
-        spi-max-frequency = <1000000>;
-        status = "okay";
+        spi-max-frequency = <1000000>;  // Adjust SPI speed as needed
+        gpio-reset = <&gpio2>;          // GPIO for LoRa reset (adjust pin as needed)
+        gpio-dio0 = <&gpio3>;           // GPIO for DIO0 (interrupt pin for LoRa)
     };
 };
 
-&uart0 {
+&gpio {
     status = "okay";
 
-    soil_moisture_sensor: soil_moisture {
-        compatible = "mock,sensor";
-        label = "Soil_Moisture";
-        status = "okay";
+    dht1: dht_sensor {
+        compatible = "dht,dht11";  // Specify your sensor's type (DHT11 or DHT22)
+        gpios = <&gpio10 GPIO_ACTIVE_HIGH>;  // GPIO pin connected to sensor data line
+        data-polarity = <0>;  // Set the polarity for the data line if needed
     };
 };
 

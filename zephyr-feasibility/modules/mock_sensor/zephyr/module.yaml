@@ -1,6 +1,0 @@
-name: mock_sensor
-build:
-  cmake: .
-  kconfig: Kconfig
-  settings:
-    dts_root: .

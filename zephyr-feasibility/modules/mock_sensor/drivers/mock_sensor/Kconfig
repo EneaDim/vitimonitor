@@ -1,7 +1,0 @@
-# Create a new option in menuconfig
-config MOCK_SENSOR
-    bool "Mock Sensor"
-    default n       # Set the driver to be disabled by default
-    depends on GPIO # Make it dependent on GPIO driver
-    help
-        Enable the custom button driver.
