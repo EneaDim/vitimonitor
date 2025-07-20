@@ -1,23 +1,24 @@
-&spi1 {
+&spi2 {
     status = "okay";
-    flash = <&flash>;
 
     lora: lora@0 {
         compatible = "lora,spi";
         reg = <0>;
-        spi-max-frequency = <1000000>;  // Adjust SPI speed as needed
-        gpio-reset = <&gpio2>;          // GPIO for LoRa reset (adjust pin as needed)
-        gpio-dio0 = <&gpio3>;           // GPIO for DIO0 (interrupt pin for LoRa)
+        spi-max-frequency = <1000000>;
+
+        // Usare GPIO17 per reset e GPIO16 per DIO0
+        gpio-reset = <&gpio0 17 GPIO_ACTIVE_HIGH>;  // Reset pin
+        gpio-dio0 = <&gpio0 16 GPIO_ACTIVE_HIGH>;   // Interrupt pin (DIO0)
     };
 };
 
-&gpio {
+&gpio0 {
     status = "okay";
 
     dht1: dht_sensor {
-        compatible = "dht,dht11";  // Specify your sensor's type (DHT11 or DHT22)
-        gpios = <&gpio10 GPIO_ACTIVE_HIGH>;  // GPIO pin connected to sensor data line
-        data-polarity = <0>;  // Set the polarity for the data line if needed
+        compatible = "dht,dht11";  // o "dht,dht22" se usi DHT22
+        gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;  // Es: GPIO4 per il data pin del DHT
+        data-polarity = <0>;
     };
 };
 

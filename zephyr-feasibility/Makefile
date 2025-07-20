@@ -4,7 +4,7 @@ OVERLAY ?=esp32s3
 ORANGE  :=\033[38;5;214m
 RESET   :=\033[0m
 
-all:: config build run
+all: config build run
 
 config:
 	cmake -S . -B build -DBOARD=$(BOARD)
@@ -14,6 +14,9 @@ menuconfig: config
 
 build:
 	cmake --build build
+
+west_build:
+	 west build -p always -b $(BOARD) -- -DDTC_OVERLAY_FILE=boards/$(OVERLAY).overlay
 
 run:
 	cmake --build build --target run
