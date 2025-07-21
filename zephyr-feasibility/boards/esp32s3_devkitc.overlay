@@ -1,0 +1,49 @@
+&i2c0 {
+    status = "okay";
+    clock-frequency = <I2C_BITRATE_STANDARD>; /* 100kHz */
+
+    temp_hum_emul: sht3xd@44 {
+        compatible = "zephyr,sensor-emulator";
+        reg = <0x44>;
+        emul-type = "sht3xd";
+        emul-init-value = <22000>;  /* 22.0°C */
+        emul-humidity = <45000>;    /* 45.0% */
+        label = "TEMP_HUM_EMUL";
+        alert-gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>;
+        status = "okay";
+    };
+
+    light_emul: bh1750@23 {
+        compatible = "zephyr,sensor-emulator";
+        reg = <0x23>;
+        emul-type = "bh1750";
+        emul-init-value = <100>;    /* 100 lux */
+        label = "LIGHT_EMUL";
+        alert-gpios = <&gpio0 31 GPIO_ACTIVE_HIGH>;
+        status = "okay";
+    };
+};
+
+/ {
+    leds {
+    
+        compatible = "gpio-leds";
+        led0: led_0 {
+            gpios = <&fakegpio 0 GPIO_ACTIVE_HIGH>;
+            label = "FAKE_LED_0";
+        };
+    };
+
+    fakegpio: gpio@0 {
+        compatible = "zephyr,gpio-emul";
+        gpio-controller;
+        #gpio-cells = <2>;
+        reg = <0 0x1000>;  /* Corrected reg property format */
+        #address-cells = <1>;
+        #size-cells = <1>;
+        ngpios = <32>;
+        status = "okay";
+    };
+};
+
+

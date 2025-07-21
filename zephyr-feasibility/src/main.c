@@ -1,169 +1,160 @@
 #include <zephyr/kernel.h>
-#include <zephyr/device.h>
+#include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/sensor.h>
-#include <zephyr/sys/printk.h>
-#include <stdlib.h>  // For rand()
-#include <zephyr/sys/util.h>
-#include <zephyr/sys/__assert.h>
+#include <zephyr/logging/log.h>
 
-// Sensor data structure (only temperature)
-struct sensor_data {
-  struct sensor_value temperature;  // Only temperature value
-};
+LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
-// Configuration variables
-static bool enable_compression = true;  // Enable/disable data compression before transmission
-static int sensor_read_interval = 10;  // Sensor read interval in seconds
+/* Thread stack size & priority */
+#define STACK_SIZE 1024
+#define LED_PRIORITY 5
+#define TEMP_PRIORITY 5
+#define LUX_PRIORITY 5
 
-// Thread stacks and data
-K_THREAD_STACK_DEFINE(sensor_stack, 1024);  // Stack size for the sensor thread
-K_THREAD_STACK_DEFINE(lora_stack, 1024);  // Stack size for the LoRa thread
-K_THREAD_STACK_DEFINE(power_stack, 512);  // Stack size for the power management thread
+#define LED_BLINK_INTERVAL_MS 500
+#define TEMP_INTERVAL_MS      1000
+#define LUX_INTERVAL_MS       500
 
-static struct k_thread sensor_thread_data;  // Data structure for the sensor thread
-static struct k_thread lora_thread_data;  // Data structure for the LoRa thread
-static struct k_thread power_thread_data;  // Data structure for the power management thread
+/* LED DT spec: `led0` alias points to fakegpio pin in overlay */
+//static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
+static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_NODELABEL(led0), gpios);
+/* Sensors (we still use device_get_binding since Zephyr sensor API lacks DT helpers yet) */
+#define TEMP_HUM_LABEL "TEMP_HUM_EMUL"
+#define LIGHT_LABEL    "LIGHT_EMUL"
 
-static struct sensor_data shared_data;   // Shared data between threads
-static struct k_sem data_ready_sem;    // Semaphore to synchronize data access between threads
+static const struct device *temp_hum_dev = DEVICE_DT_GET_ANY(DT_NODELABEL(temp_hum_emul));
+static const struct device *light_dev = DEVICE_DT_GET_ANY(DT_NODELABEL(light_emul));
 
-// Generate random sensor value (fallback, if needed)
-static struct sensor_value generate_random_value(void) {
-  struct sensor_value value;
-  value.val1 = rand() % 40 + 10;  // Random temperature between 10 and 50
-  value.val2 = rand() % 1000000;  // Random fractional part (microseconds)
-  return value;
+/* Stacks for dynamic threads */
+K_THREAD_STACK_DEFINE(led_stack, STACK_SIZE);
+K_THREAD_STACK_DEFINE(temp_stack, STACK_SIZE);
+K_THREAD_STACK_DEFINE(lux_stack, STACK_SIZE);
+
+/* Thread data */
+static struct k_thread led_thread_data;
+static struct k_thread temp_thread_data;
+static struct k_thread lux_thread_data;
+
+/* LED thread */
+void led_thread(void *arg1, void *arg2, void *arg3)
+{
+    int ret;
+    bool led_is_on = false;
+
+    while (1) {
+        led_is_on = !led_is_on;
+        ret = gpio_pin_set_dt(&led, led_is_on);
+        if (ret < 0) {
+            LOG_ERR("Failed to set LED: %d", ret);
+        }
+        k_msleep(LED_BLINK_INTERVAL_MS);
+    }
 }
 
-// Helper function: Sample sensor data and get channel value
-// If sensor not ready, fallback to a random value
-static int fetch_sensor_data(const struct device *dev, enum sensor_channel chan, struct sensor_value *val) {
-  if (!device_is_ready(dev)) {  // Check if the device is ready
-    *val = generate_random_value();  // Generate random data if the sensor is not ready
-    return 0;  // No error, return 0
-  }
-  int ret = sensor_sample_fetch(dev);  // Fetch sample from the sensor
-  if (ret < 0) {
-    printk("Failed to fetch sample from %s: %d\n", dev->name, ret);  // Print error if fetch fails
-    return ret;
-  }
-  ret = sensor_channel_get(dev, chan, val);  // Get the requested channel value (e.g., temperature)
-  if (ret < 0) {
-    printk("Failed to get channel %d from %s: %d\n", chan, dev->name, ret);  // Print error if fetching channel fails
-  }
-  return ret;
-}
-
-// Thread to read temperature sensor periodically and update shared data
-void read_sensors(void *arg1, void *arg2, void *arg3) {
-  const struct device *temp_sensor = DEVICE_DT_GET(DT_NODELABEL(dht1));  // Fetch temperature sensor device
-
-  ARG_UNUSED(arg2);  // Unused arguments
-  ARG_UNUSED(arg3);
-
-  printk("Sensor thread started\n");
-
-  while (1) {
+/* Temperature & humidity thread */
+void temp_thread(void *arg1, void *arg2, void *arg3)
+{
+    struct sensor_value temp, hum;
     int ret;
 
-    // Fetch temperature data from the sensor
-    ret = fetch_sensor_data(temp_sensor, SENSOR_CHAN_AMBIENT_TEMP, &shared_data.temperature);
-    if (ret == 0) {
-      printk("Temperature: %d.%06d C\n", shared_data.temperature.val1, shared_data.temperature.val2);  // Print temperature data
+    while (1) {
+        ret = sensor_sample_fetch(temp_hum_dev);
+        if (ret < 0) {
+            LOG_ERR("Failed to fetch temp/hum sample: %d", ret);
+            k_msleep(TEMP_INTERVAL_MS);
+            continue;
+        }
+
+        sensor_channel_get(temp_hum_dev, SENSOR_CHAN_AMBIENT_TEMP, &temp);
+        sensor_channel_get(temp_hum_dev, SENSOR_CHAN_HUMIDITY, &hum);
+
+        LOG_INF("Temperature: %d.%06d C, Humidity: %d.%06d %%",
+                temp.val1, temp.val2, hum.val1, hum.val2);
+
+        k_msleep(TEMP_INTERVAL_MS);
+    }
+}
+
+/* Luminosity thread */
+void lux_thread(void *arg1, void *arg2, void *arg3)
+{
+    struct sensor_value lux;
+    int ret;
+
+    while (1) {
+        ret = sensor_sample_fetch(light_dev);
+        if (ret < 0) {
+            LOG_ERR("Failed to fetch luminosity sample: %d", ret);
+            k_msleep(LUX_INTERVAL_MS);
+            continue;
+        }
+
+        sensor_channel_get(light_dev, SENSOR_CHAN_LIGHT, &lux);
+
+        LOG_INF("Luminosity: %d.%06d lx", lux.val1, lux.val2);
+
+        k_msleep(LUX_INTERVAL_MS);
+    }
+}
+
+/* Main */
+int main(void)
+{
+    int ret;
+
+    LOG_INF("Zephyr ESP32-S3 sensor + LED example starting…");
+
+    if (!device_is_ready(led.port)) {
+        LOG_ERR("LED GPIO device not ready");
+        return 0;
     }
 
-    // Notify LoRa thread that new data is ready
-    k_sem_give(&data_ready_sem);
-
-    // Wait for the next interval before reading again
-    k_sleep(K_SECONDS(sensor_read_interval));
-  }
-}
-
-// Simple compression function (store only the high and low bytes of val1)
-static void compress_data(const struct sensor_data *data, uint8_t *compressed_data) {
-  compressed_data[0] = (data->temperature.val1 >> 8) & 0xFF;  // Extract the high byte of temperature
-  compressed_data[1] = data->temperature.val1 & 0xFF;    // Extract the low byte of temperature
-}
-
-// LoRa send function (stub)
-static void lora_send(uint8_t *data, size_t len) {
-  printk("Sending data via LoRa: ");
-  for (size_t i = 0; i < len; i++) {
-    printk("%02x ", data[i]);  // Print the data to be sent
-  }
-  printk("\n");
-}
-
-// Thread to send sensor data over LoRa when available
-void send_lora(void *arg1, void *arg2, void *arg3) {
-  uint8_t buffer[2];  // Buffer to store compressed sensor data
-
-  ARG_UNUSED(arg1);  // Unused arguments
-  ARG_UNUSED(arg2);
-  ARG_UNUSED(arg3);
-
-  printk("LoRa thread started\n");
-
-  while (1) {
-    // Wait until sensor data is ready
-    k_sem_take(&data_ready_sem, K_FOREVER);
-
-    // If compression is enabled, compress the data
-    if (enable_compression) {
-      compress_data(&shared_data, buffer);
-      lora_send(buffer, sizeof(buffer));  // Send the compressed data over LoRa
-    } else {
-      // If compression is disabled, send raw data (only val1 of temperature)
-      buffer[0] = (shared_data.temperature.val1 >> 8) & 0xFF;
-      buffer[1] = shared_data.temperature.val1 & 0xFF;
-
-      lora_send(buffer, sizeof(buffer));  // Send raw data over LoRa
+    ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE);
+    if (ret < 0) {
+        LOG_ERR("Failed to configure LED pin: %d", ret);
+        return 0;
     }
-  }
-}
 
-// Power management thread
-void manage_power(void *arg1, void *arg2, void *arg3) {
-  printk("Power management thread started\n");
+    /* Get sensor devices */
 
-  while (1) {
-    // Suspend unused threads to save power
-    k_thread_suspend(&sensor_thread_data);  // Suspend the sensor thread
-    k_thread_suspend(&lora_thread_data);  // Suspend the LoRa thread
+    //temp_hum_dev = device_get_binding(TEMP_HUM_LABEL);
+    //if (!temp_hum_dev) {
+    //    LOG_ERR("Failed to bind temp/humidity sensor: %s", TEMP_HUM_LABEL);
+    //    return 0;
+    //}
 
-    // Enter low-power state (system will sleep here)
-    printk("Entering low-power state\n");
-    k_sleep(K_FOREVER);  // System will stay in low power mode
+    //light_dev = device_get_binding(LIGHT_LABEL);
+    //if (!light_dev) {
+    //    LOG_ERR("Failed to bind light sensor: %s", LIGHT_LABEL);
+    //    return 0;
+    //}
 
-    // Once the system wakes up, resume the threads
-    printk("Waking up from low-power state\n");
-    k_thread_resume(&sensor_thread_data);  // Resume the sensor thread
-    k_thread_resume(&lora_thread_data);  // Resume the LoRa thread
-  }
-}
+    if (!device_is_ready(temp_hum_dev)) {
+        LOG_ERR("Temp/Humidity sensor device not ready");
+        return 0;
+    }
 
-int main(void) {
-  printk("Application started\n");
+    if (!device_is_ready(light_dev)) {
+        LOG_ERR("Light sensor device not ready");
+        return 0;
+    }
+    
 
-  // Initialize semaphore to synchronize sensor data availability between threads
-  k_sem_init(&data_ready_sem, 0, 1);
+    LOG_INF("All devices initialized successfully, starting threads…");
 
-  // Create threads for sensor reading, LoRa sending, and power management
-  k_thread_create(&sensor_thread_data, sensor_stack, K_THREAD_STACK_SIZEOF(sensor_stack),
-          read_sensors, NULL, NULL, NULL, 7, 0, K_NO_WAIT);
+    /* Start threads dynamically */
+    k_thread_create(&led_thread_data, led_stack, STACK_SIZE,
+                    led_thread, NULL, NULL, NULL,
+                    LED_PRIORITY, 0, K_NO_WAIT);
 
-  k_thread_create(&lora_thread_data, lora_stack, K_THREAD_STACK_SIZEOF(lora_stack),
-          send_lora, NULL, NULL, NULL, 6, 0, K_NO_WAIT);
+    k_thread_create(&temp_thread_data, temp_stack, STACK_SIZE,
+                    temp_thread, NULL, NULL, NULL,
+                    TEMP_PRIORITY, 0, K_NO_WAIT);
 
-  k_thread_create(&power_thread_data, power_stack, K_THREAD_STACK_SIZEOF(power_stack),
-          manage_power, NULL, NULL, NULL, 5, 0, K_NO_WAIT);
+    k_thread_create(&lux_thread_data, lux_stack, STACK_SIZE,
+                    lux_thread, NULL, NULL, NULL,
+                    LUX_PRIORITY, 0, K_NO_WAIT);
 
-  // Main loop does nothing; the threads run independently
-  while (1) {
-    k_sleep(K_FOREVER);  // Yield control to idle thread to save power
-  }
-
-  return 0;  // Return (unreachable code)
+    return 0;
 }
 
