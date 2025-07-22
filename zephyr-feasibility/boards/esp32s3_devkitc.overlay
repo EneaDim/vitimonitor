@@ -3,23 +3,17 @@
     clock-frequency = <I2C_BITRATE_STANDARD>; /* 100kHz */
 
     temp_hum_emul: sht3xd@44 {
-        compatible = "zephyr,sensor-emulator";
+        compatible = "sensirion,sht3xd";
         reg = <0x44>;
-        emul-type = "sht3xd";
-        emul-init-value = <22000>;  /* 22.0°C */
-        emul-humidity = <45000>;    /* 45.0% */
         label = "TEMP_HUM_EMUL";
         alert-gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>;
         status = "okay";
     };
 
     light_emul: bh1750@23 {
-        compatible = "zephyr,sensor-emulator";
+        compatible = "rohm,bh1750";
         reg = <0x23>;
-        emul-type = "bh1750";
-        emul-init-value = <100>;    /* 100 lux */
         label = "LIGHT_EMUL";
-        alert-gpios = <&gpio0 31 GPIO_ACTIVE_HIGH>;
         status = "okay";
     };
 };

@@ -12,20 +12,9 @@ project(
   LANGUAGES C
 )
 
+#target_include_directories(app PRIVATE include)
+
 # Add main source file
 target_sources(app PRIVATE src/main.c)
 
-# Optional: Add include directories
-# target_include_directories(app PRIVATE include)
-
-# Optional: Add additional sources
-# target_sources(app PRIVATE src/utils.c src/device.c)
-
-# Optional: Add libraries
-# target_link_libraries(app PRIVATE my_custom_lib)
-
-# Optional: Define compile definitions
-# target_compile_definitions(app PRIVATE MY_MACRO=1)
-
-# Optional: Compiler options
-# target_compile_options(app PRIVATE -Wall -Werror)
+#target_include_directories(app PRIVATE ${ZEPHYR_BASE}/include)
