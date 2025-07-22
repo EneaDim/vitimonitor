@@ -1,0 +1,42 @@
+&i2c0 {
+    status = "okay";
+    clock-frequency = <I2C_BITRATE_STANDARD>; /* 100kHz */
+
+    sht3xd_emul: sht3xd@44 {
+        compatible = "sensirion,sht3xd_emul";
+        reg = <0x44>;
+        label = "TEMP_HUM_EMUL";
+        alert-gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>;
+        status = "okay";
+    };
+
+};
+
+/ {
+	  aliases {
+  	  	sht3xd-emul = &sht3xd_emul;
+	  };
+
+
+    leds {
+    
+        compatible = "gpio-leds";
+        led0: led_0 {
+            gpios = <&fakegpio 0 GPIO_ACTIVE_HIGH>;
+            label = "FAKE_LED_0";
+        };
+    };
+
+    fakegpio: gpio@0 {
+        compatible = "zephyr,gpio-emul";
+        gpio-controller;
+        #gpio-cells = <2>;
+        reg = <0 0x1000>;  /* Corrected reg property format */
+        #address-cells = <1>;
+        #size-cells = <1>;
+        ngpios = <32>;
+        status = "okay";
+    };
+};
+
+

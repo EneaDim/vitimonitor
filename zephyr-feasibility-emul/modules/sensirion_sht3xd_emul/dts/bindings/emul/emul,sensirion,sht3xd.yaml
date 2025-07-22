@@ -1,0 +1,10 @@
+compatible: "emul,sensirion,sht3xd"
+
+properties:
+  reg:
+    description: Emulator I2C address
+    type: int
+    required: true
+
+description: Emulator for Sensirion SHT3XD sensor
+
