@@ -1,7 +1,3 @@
-/*
- * Zephyr app: LED + emulated random values (no I2C sensor drivers)
- */
-
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
@@ -28,6 +24,40 @@ static struct k_thread led_thread_data;
 static struct k_thread temp_thread_data;
 static struct k_thread lux_thread_data;
 
+/* Emulated I2C read function */
+int emulated_i2c_read(uint8_t device_addr, uint8_t reg_addr, uint8_t *data, size_t len)
+{
+    switch (device_addr) {
+    case 0x44:  /* Temperature & Humidity sensor */
+        if (reg_addr == 0x00) {  // Temperature register
+            uint16_t temp = sys_rand32_get() % 4000;
+            data[0] = (temp >> 8) & 0xFF;
+            data[1] = temp & 0xFF;
+        } else if (reg_addr == 0x01) {  // Humidity register
+            uint16_t hum = sys_rand32_get() % 10000;
+            data[0] = (hum >> 8) & 0xFF;
+            data[1] = hum & 0xFF;
+        }
+        break;
+
+    case 0x23:  /* Lux sensor */
+        if (reg_addr == 0x10) {
+            uint32_t lux = sys_rand32_get() % 100000;
+            data[0] = (lux >> 16) & 0xFF;
+            data[1] = (lux >> 8) & 0xFF;
+            data[2] = lux & 0xFF;
+        }
+        break;
+
+    default:
+        LOG_WRN("Unknown I2C device address 0x%02X", device_addr);
+        return -EINVAL;
+    }
+
+    LOG_DBG("Emulated I2C read from 0x%02X reg 0x%02X len %zu", device_addr, reg_addr, len);
+    return 0;
+}
+
 void led_thread(void *arg1, void *arg2, void *arg3)
 {
     int ret;
@@ -39,18 +69,25 @@ void led_thread(void *arg1, void *arg2, void *arg3)
         if (ret < 0) {
             LOG_ERR("Failed to set LED: %d", ret);
         }
+        LOG_INF("Emulated Led Blink: %s", led_is_on ? "True" : "False");
         k_msleep(LED_BLINK_INTERVAL_MS);
     }
 }
 
 void temp_thread(void *arg1, void *arg2, void *arg3)
 {
-    int32_t temp_val, hum_val;
+    uint8_t buf[2];
+    uint16_t temp_val, hum_val;
     int temp_int, temp_frac, hum_int, hum_frac;
 
     while (1) {
-        temp_val = sys_rand32_get() % 4000;
-        hum_val  = sys_rand32_get() % 10000;
+        if (emulated_i2c_read(0x44, 0x00, buf, 2) == 0) {
+            temp_val = ((uint16_t)buf[0] << 8) | buf[1];
+        }
+
+        if (emulated_i2c_read(0x44, 0x01, buf, 2) == 0) {
+            hum_val = ((uint16_t)buf[0] << 8) | buf[1];
+        }
 
         temp_int = temp_val / 100;
         temp_frac = (temp_val % 100) * 10000;
@@ -66,12 +103,17 @@ void temp_thread(void *arg1, void *arg2, void *arg3)
 
 void lux_thread(void *arg1, void *arg2, void *arg3)
 {
-    int32_t lux_val;
+    uint8_t buf[3];
+    uint32_t lux_val;
 
     while (1) {
-        lux_val = sys_rand32_get() % 100000;
+        if (emulated_i2c_read(0x23, 0x10, buf, 3) == 0) {
+            lux_val = ((uint32_t)buf[0] << 16) |
+                      ((uint32_t)buf[1] << 8) |
+                       (uint32_t)buf[2];
+        }
 
-        LOG_INF("Emulated Luminosity: %d lx", lux_val);
+        LOG_INF("Emulated Luminosity: %u lx", lux_val);
 
         k_msleep(LUX_INTERVAL_MS);
     }
