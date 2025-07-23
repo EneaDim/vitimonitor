@@ -1,16 +1,27 @@
+/ {
+    aliases {
+        led0 = &led0;
+        sht3xd-emul0 = &sht3xd_emul;
+    };
+};
+
 &i2c0 {
     status = "okay";
     clock-frequency = <I2C_BITRATE_STANDARD>; /* 100kHz */
+    compatible = "zephyr,i2c-emul-controller";
 
     sht3xd_emul: sht3xd@44 {
-        compatible = "sensirion,sht3xd,emul";
+        compatible = "sensirion,sht3xd-emul";
         reg = <0x44>;
-        status = "okay";
     };
 
 };
 
 &gpio0 {
+    status = "okay";
+};
+
+&led0 {
     status = "okay";
 };
 

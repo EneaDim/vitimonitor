@@ -21,7 +21,8 @@ LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 #define TEMP_INTERVAL_MS      1000
 
 // LED
-static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_NODELABEL(led0), gpios);
+#define LED0_NODE DT_NODELABEL(led0)
+static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
 
 // I2C bus
 #define I2C_NODE DT_NODELABEL(i2c0)
@@ -40,7 +41,7 @@ static struct k_thread temp_thread_data;
 // -----------------------------------------------------------------------------
 // LED Thread
 
-void led_thread(void *arg1, void *arg2, void *arg3)
+void led_thread()
 {
     int ret;
     bool led_is_on = false;
@@ -59,7 +60,7 @@ void led_thread(void *arg1, void *arg2, void *arg3)
 // -----------------------------------------------------------------------------
 // Temperature Thread (reads via I2C using real driver commands)
 
-void temp_thread(void *arg1, void *arg2, void *arg3)
+void temp_thread()
 {
     uint8_t cmd[] = { 0x2C, 0x06 };  // High repeatability measurement command
     uint8_t read_buf[6];            // Temp (2+1 CRC) + Humidity (2+1 CRC)

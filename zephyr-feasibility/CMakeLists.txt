@@ -17,4 +17,4 @@ project(
 # Add main source file
 target_sources(app PRIVATE src/main.c)
 
-#target_include_directories(app PRIVATE ${ZEPHYR_BASE}/include)
+target_include_directories(app PRIVATE ${ZEPHYR_BASE}/include)

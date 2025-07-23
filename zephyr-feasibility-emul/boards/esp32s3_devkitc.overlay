@@ -3,7 +3,7 @@
     clock-frequency = <I2C_BITRATE_STANDARD>; /* 100kHz */
 
     sht3xd_emul: sht3xd@44 {
-        compatible = "sensirion,sht3xd_emul";
+        compatible = "sensirion,sht3xd-emul";
         reg = <0x44>;
         label = "TEMP_HUM_EMUL";
         alert-gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>;
@@ -14,7 +14,8 @@
 
 / {
 	  aliases {
-  	  	sht3xd-emul = &sht3xd_emul;
+        led0 = &led0;
+        sht3xd-emul0 = &sht3xd_emul;
 	  };
 
 
