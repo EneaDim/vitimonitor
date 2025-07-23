@@ -3,6 +3,7 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/i2c.h>
+#include <zephyr/drivers/emul.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/random/random.h>
 
@@ -28,9 +29,9 @@ static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
 #define I2C_NODE DT_NODELABEL(i2c0)
 static const struct device *i2c_dev = DEVICE_DT_GET(I2C_NODE);
 
-// Emulator device (label must match the one in the .overlay)
-#define SHT3XD_EMUL DT_NODELABEL(sht3xd_emul)
-static const struct device *sht3xd_dev = DEVICE_DT_GET(SHT3XD_EMUL);
+// SHT3XD emulator node (emulated device)
+#define SHT3XD_EMUL_NODE DT_NODELABEL(sht3xd_emul)
+static const struct emul *sht3xd_emul = EMUL_DT_GET(SHT3XD_EMUL_NODE);
 
 // Thread stacks and data
 K_THREAD_STACK_DEFINE(led_stack, STACK_SIZE);
@@ -41,7 +42,7 @@ static struct k_thread temp_thread_data;
 // -----------------------------------------------------------------------------
 // LED Thread
 
-void led_thread()
+void led_thread(void)
 {
     int ret;
     bool led_is_on = false;
@@ -52,15 +53,14 @@ void led_thread()
         if (ret < 0) {
             LOG_ERR("Failed to set LED: %d", ret);
         }
-        LOG_INF("Emulated LED Blink: %s", led_is_on ? "True" : "False");
+        LOG_INF("Emulated LED Blink: %s", led_is_on ? "On" : "Off");
         k_msleep(LED_BLINK_INTERVAL_MS);
     }
 }
 
 // -----------------------------------------------------------------------------
-// Temperature Thread (reads via I2C using real driver commands)
-
-void temp_thread()
+// Temperature Thread
+void temp_thread(void)
 {
     uint8_t cmd[] = { 0x2C, 0x06 };  // High repeatability measurement command
     uint8_t read_buf[6];            // Temp (2+1 CRC) + Humidity (2+1 CRC)
@@ -70,10 +70,11 @@ void temp_thread()
         uint16_t temp_raw = 0x6000 + (sys_rand32_get() % 0x0800);
         uint16_t hum_raw  = 0x8000 + (sys_rand32_get() % 0x1000);
 
-        const struct sht3xd_emul_api *api = (const struct sht3xd_emul_api *)sht3xd_dev->api;
-        api->set(sht3xd_dev, temp_raw, hum_raw);
+        const struct sht3xd_emul_api *api =
+            (const struct sht3xd_emul_api *) sht3xd_emul->dev->api;
 
-        // Write command
+        api->set(sht3xd_emul->dev, temp_raw, hum_raw);
+
         int ret = i2c_write(i2c_dev, cmd, sizeof(cmd), 0x44);
         if (ret != 0) {
             LOG_ERR("I2C write failed: %d", ret);
@@ -81,7 +82,6 @@ void temp_thread()
             continue;
         }
 
-        // Read data
         ret = i2c_read(i2c_dev, read_buf, sizeof(read_buf), 0x44);
         if (ret != 0) {
             LOG_ERR("I2C read failed: %d", ret);
@@ -89,7 +89,6 @@ void temp_thread()
             continue;
         }
 
-        // Parse values (ignore CRC for now)
         uint16_t temp_val = (read_buf[0] << 8) | read_buf[1];
         uint16_t hum_val  = (read_buf[3] << 8) | read_buf[4];
 
@@ -119,7 +118,7 @@ int main(void)
         return 0;
     }
 
-    if (!device_is_ready(sht3xd_dev)) {
+    if (!device_is_ready(sht3xd_emul->dev)) {
         LOG_ERR("SHT3XD emulator device not ready");
         return 0;
     }

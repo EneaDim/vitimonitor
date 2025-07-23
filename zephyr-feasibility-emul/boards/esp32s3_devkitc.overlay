@@ -5,8 +5,6 @@
     sht3xd_emul: sht3xd@44 {
         compatible = "sensirion,sht3xd-emul";
         reg = <0x44>;
-        label = "TEMP_HUM_EMUL";
-        alert-gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>;
         status = "okay";
     };
 

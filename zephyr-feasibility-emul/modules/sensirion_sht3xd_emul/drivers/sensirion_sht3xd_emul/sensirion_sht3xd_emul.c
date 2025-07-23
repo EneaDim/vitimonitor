@@ -136,12 +136,16 @@ static int sht3xd_emul_init(const struct emul *target, const struct device *pare
 }
 
 /* Instantiation macro for each emulator node */
-#define SHT3XD_EMUL(n)                                                                         \
-    static struct sht3xd_emul_data sht3xd_emul_data_##n;                                      \
-    static const struct sht3xd_emul_cfg sht3xd_emul_cfg_##n = {                              \
-        .addr = DT_INST_REG_ADDR(n),                                                         \
-    };                                                                                        \
-    EMUL_DT_INST_DEFINE(n, sht3xd_emul_init, &sht3xd_emul_data_##n, &sht3xd_emul_cfg_##n,     \
-                        &sht3xd_emul_i2c_api,  &sht3xd_emul_driver_api)
+#define SHT3XD_EMUL(n)                                                    \
+    static struct sht3xd_emul_data sht3xd_emul_data_##n;                 \
+    static const struct sht3xd_emul_cfg sht3xd_emul_cfg_##n = {         \
+        .addr = DT_INST_REG_ADDR(n),                                    \
+    };                                                                   \
+    DEVICE_DT_INST_DEFINE(n, NULL, NULL,                                 \
+            &sht3xd_emul_data_##n, &sht3xd_emul_cfg_##n,                \
+            POST_KERNEL, I2C_INIT_PRIORITY + 1, &sht3xd_emul_driver_api);   \
+    EMUL_DT_INST_DEFINE(n, sht3xd_emul_init,                             \
+            &sht3xd_emul_data_##n, &sht3xd_emul_cfg_##n,                 \
+            &sht3xd_emul_i2c_api, &sht3xd_emul_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(SHT3XD_EMUL)
