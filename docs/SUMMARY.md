@@ -1,7 +1,6 @@
 # 📘 Sommario
 
 * [📘 Introduzione](README.md)
-* [💡 Idea progettuale](idea.md)
 * [📊 Modelli agronomici](modelli.md)
 * [🔧 MVP - Prototipo minimo](mvp.md)
 * [📐 Requisiti](requisiti.md)
