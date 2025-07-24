@@ -5,7 +5,7 @@ Il sistema consente di raccogliere, analizzare e visualizzare dati in tempo real
 
 ---
 
-## ¿ Obiettivi del Progetto
+## ¿ Obiettivo del Progetto
 
 - **Monitorare in tempo reale il vigneto** con sensori ambientali (suolo, aria, luce).
 - **Fornire supporto decisionale** ad agronomi, enologi e tecnici.
