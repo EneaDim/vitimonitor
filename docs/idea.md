@@ -48,10 +48,10 @@ Il sistema consente di raccogliere, analizzare e visualizzare dati in tempo real
 
 - Web app per PC (enologo, manager, agronomo)
 - Dashboard con:
-- Mappe georeferenziate
-- Grafici storici e in tempo reale
-- Allarmi e notifiche
-- Gestione microzone
+    - Mappe georeferenziate
+    - Grafici storici e in tempo reale
+    - Allarmi e notifiche
+    - Gestione microzone
 
 #### App Mobile
 

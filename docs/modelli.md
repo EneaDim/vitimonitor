@@ -2,6 +2,8 @@
 
 Questo documento descrive i modelli matematici, algoritmici e di intelligenza artificiale integrabili in **Vitimonitor** per supporto decisionale in viticoltura di precisione.
 
+![Modelli Predittivi](./images/modelli_small.png)
+
 ---
 
 ## 1. 🌡️ Growing Degree Days (GDD)
