@@ -4,6 +4,7 @@
 Il sistema consente di raccogliere, analizzare e visualizzare dati in tempo reale dal vigneto, permettendo decisioni basate su dati oggettivi e predittivi.
 
 ![Idea sulla viticoltura di precisione](./images/idea_small.png)
+
 ---
 
 ## 🌱 Obiettivi del Progetto
