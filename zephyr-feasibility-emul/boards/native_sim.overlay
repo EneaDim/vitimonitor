@@ -8,6 +8,11 @@
         status = "okay";
     };
 
+    bh1750_emul: bh1750@23 {
+        compatible = "rohm,bh1750-emul";
+        reg = <0x23>;  /* Typical BH1750 I2C address */
+        status = "okay";
+    };
 };
 
 &gpio0 {

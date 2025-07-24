@@ -7,54 +7,65 @@
 #include <zephyr/logging/log.h>      // Logging system
 #include <zephyr/random/random.h>    // Random number generation
 
-// Optional emulator header (only included if emulator is enabled in config)
 #ifdef CONFIG_EMUL
 #include "sensirion_sht3xd_emul.h"
+#include "rohm_bt1750_emul.h"
 #endif
 
-// Register this file for logging with the "main" tag and INFO log level
 LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
 // -----------------------------------------------------------------------------
-// Constants and thread configuration
+// Constants and thread config
 
-#define STACK_SIZE 1024              // Stack size for each thread
-#define LED_PRIORITY 5               // LED thread priority
-#define TEMP_PRIORITY 5              // Temperature thread priority
+#define STACK_SIZE 1024
 
-#define LED_BLINK_INTERVAL_MS 500    // LED toggle interval
-#define TEMP_INTERVAL_MS      1000   // Temp sampling interval
+#define LED_PRIORITY 5
+#define TEMP_PRIORITY 5
+#define LIGHT_PRIORITY 5
 
-// -----------------------------------------------------------------------------
-// LED setup using devicetree
-
-#define LED0_NODE DT_NODELABEL(led0)                           // Node label from devicetree
-static const struct gpio_dt_spec led =                         // Get GPIO spec struct
-    GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);                   // From LED alias in devicetree
+#define LED_BLINK_INTERVAL_MS 500
+#define TEMP_INTERVAL_MS      1000
+#define LIGHT_INTERVAL_MS     1000
 
 // -----------------------------------------------------------------------------
-// I2C sensor setup
+// LED setup
 
-#define SHT3XD_NODE DT_NODELABEL(sht3xd_emul)                  // Node label for SHT3XD emulator
-static const struct i2c_dt_spec sht3x_spec =                   // Get I2C spec struct
-    I2C_DT_SPEC_GET(SHT3XD_NODE);                              // Includes bus + address
+#define LED0_NODE DT_NODELABEL(led0)
+static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
+
+// -----------------------------------------------------------------------------
+// SHT3XD Emulator I2C sensor setup
+
+#define SHT3XD_NODE DT_NODELABEL(sht3xd_emul)
+static const struct i2c_dt_spec sht3x_spec = I2C_DT_SPEC_GET(SHT3XD_NODE);
 
 #ifdef CONFIG_EMUL
-// If emulator is enabled, get emulator object handle
 static const struct emul *sht3xd_emul = EMUL_DT_GET(SHT3XD_NODE);
 #endif
 
 // -----------------------------------------------------------------------------
-// Thread resources (stacks + thread metadata)
+// BH1750 Emulator setup
 
-K_THREAD_STACK_DEFINE(led_stack, STACK_SIZE);     // Stack memory for LED thread
-K_THREAD_STACK_DEFINE(temp_stack, STACK_SIZE);    // Stack memory for temp thread
-static struct k_thread led_thread_data;           // Thread control block for LED thread
-static struct k_thread temp_thread_data;          // Thread control block for temp thread
+#define BH1750_NODE DT_NODELABEL(bh1750_emul)
+static const struct i2c_dt_spec bh1750_spec = I2C_DT_SPEC_GET(BH1750_NODE);
+
+#ifdef CONFIG_EMUL
+static const struct emul *bh1750_emul = EMUL_DT_GET(BH1750_NODE);
+#endif
 
 // -----------------------------------------------------------------------------
-// LED Thread
-// Periodically toggles the LED output
+// Thread stacks and control blocks
+
+K_THREAD_STACK_DEFINE(led_stack, STACK_SIZE);
+K_THREAD_STACK_DEFINE(temp_stack, STACK_SIZE);
+K_THREAD_STACK_DEFINE(light_stack, STACK_SIZE);
+
+static struct k_thread led_thread_data;
+static struct k_thread temp_thread_data;
+static struct k_thread light_thread_data;
+
+// -----------------------------------------------------------------------------
+// LED Thread: toggles LED on/off
 
 void led_thread(void *arg1, void *arg2, void *arg3)
 {
@@ -62,88 +73,134 @@ void led_thread(void *arg1, void *arg2, void *arg3)
     bool led_is_on = false;
 
     while (1) {
-        led_is_on = !led_is_on;                          // Toggle LED state
-        ret = gpio_pin_set_dt(&led, led_is_on);          // Set the new value to GPIO
+        led_is_on = !led_is_on;
+        ret = gpio_pin_set_dt(&led, led_is_on);
         if (ret < 0) {
-            LOG_ERR("Failed to set LED: %d", ret);       // Log error if GPIO write failed
+            LOG_ERR("Failed to set LED: %d", ret);
         }
-        LOG_INF("LED Blink: %s", led_is_on ? "On" : "Off"); // Log LED state
-        k_msleep(LED_BLINK_INTERVAL_MS);                 // Wait for blink interval
+        LOG_INF("LED Blink: %s", led_is_on ? "On" : "Off");
+        k_msleep(LED_BLINK_INTERVAL_MS);
     }
 }
 
 // -----------------------------------------------------------------------------
-// Temperature Thread
-// Periodically generates a sample and logs the result
+// Temperature Thread: fetches SHT3XD sensor data and logs
 
 void temp_thread(void *arg1, void *arg2, void *arg3)
 {
     while (1) {
         float temp, hum;
 
-        // Fetch simulated temperature and humidity from emulator
+#ifdef CONFIG_EMUL
         if (sht3xd_emul_sample_fetch(sht3xd_emul, &temp, &hum) == 0) {
-            LOG_INF("Temperature: %.2f C, Humidity: %.2f %%", temp, hum);  // Log values
+            LOG_INF("Temperature: %.2f C, Humidity: %.2f %%", temp, hum);
+        } else {
+            LOG_WRN("Failed to fetch temperature/humidity data");
         }
-
-        k_msleep(TEMP_INTERVAL_MS);    // Wait until next sample
+#endif
+        k_msleep(TEMP_INTERVAL_MS);
     }
 }
 
 // -----------------------------------------------------------------------------
-// Main function
-// Initializes peripherals and starts both threads
+// Light Thread: power on BH1750, trigger measurement, fetch lux data, log
+
+void light_thread(void *arg1, void *arg2, void *arg3)
+{
+    const struct device *i2c_dev = bh1750_spec.bus;
+    uint8_t cmd;
+    uint8_t read_buf[2];
+    int ret;
+    float lux;
+
+    while (1) {
+        // Power on BH1750 (0x01)
+        cmd = 0x01;
+        ret = i2c_write(i2c_dev, &cmd, 1, bh1750_spec.addr);
+        if (ret) {
+            LOG_WRN("Failed to power on BH1750: %d", ret);
+            k_msleep(LIGHT_INTERVAL_MS);
+            continue;
+        }
+
+        // Start one-time measurement (0x23 - One-Time L-Resolution Mode)
+        cmd = 0x23;
+        ret = i2c_write(i2c_dev, &cmd, 1, bh1750_spec.addr);
+        if (ret) {
+            LOG_WRN("Failed to start BH1750 measurement: %d", ret);
+            k_msleep(LIGHT_INTERVAL_MS);
+            continue;
+        }
+
+        // Measurement time delay (approx 180 ms for BH1750)
+        k_msleep(180);
+
+        // Read 2 bytes from BH1750
+        ret = i2c_read(i2c_dev, read_buf, 2, bh1750_spec.addr);
+        if (ret) {
+            LOG_WRN("Failed to read BH1750 data: %d", ret);
+        } else {
+            uint16_t raw = (read_buf[0] << 8) | read_buf[1];
+            lux = raw / 1.2f;
+            LOG_INF("Light Intensity: %.2f lux", lux);
+        }
+
+        k_msleep(LIGHT_INTERVAL_MS);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Main: initialize devices and start threads
 
 int main(void)
 {
-    LOG_INF("Starting Zephyr SHT3XD project...");
+    LOG_INF("Starting Zephyr Sensor Project...");
 
-    // Check if LED device (GPIO controller) is ready
     if (!device_is_ready(led.port)) {
         LOG_ERR("LED GPIO device not ready");
         return 0;
     }
 
-    // Check if the I2C bus is ready
     if (!device_is_ready(sht3x_spec.bus)) {
-        LOG_ERR("I2C bus not ready");
+        LOG_ERR("I2C bus for SHT3XD not ready");
+        return 0;
+    }
+
+    if (!device_is_ready(bh1750_spec.bus)) {
+        LOG_ERR("I2C bus for BH1750 not ready");
         return 0;
     }
 
 #ifdef CONFIG_EMUL
-    // Check if emulator device is ready
     if (!device_is_ready(sht3xd_emul->dev)) {
-        LOG_ERR("Emulated SHT3XD device not ready");
+        LOG_ERR("SHT3XD emulator device not ready");
+        return 0;
+    }
+    if (!device_is_ready(bh1750_emul->dev)) {
+        LOG_ERR("BH1750 emulator device not ready");
         return 0;
     }
 #endif
 
-    // Configure LED pin as output and set it active
     if (gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE) < 0) {
-        LOG_ERR("Failed to configure LED pin");
+        LOG_ERR("Failed to configure LED GPIO");
         return 0;
     }
 
     LOG_INF("Devices ready. Starting threads...");
 
-    // Create and start LED thread
-    k_thread_create(&led_thread_data, // k_thread struct reference
-                    led_stack,        // stack defined
-                    STACK_SIZE,       // stack size
-                    led_thread,       // function
-                    NULL,             // arg1
-                    NULL,             // arg2
-                    NULL,             // arg3
-                    LED_PRIORITY,     // priority
-                    0,                // options
-                    K_NO_WAIT         // delay
-    );
+    k_thread_create(&led_thread_data, led_stack, STACK_SIZE,
+                    led_thread, NULL, NULL, NULL,
+                    LED_PRIORITY, 0, K_NO_WAIT);
 
-    // Create and start temperature thread
     k_thread_create(&temp_thread_data, temp_stack, STACK_SIZE,
                     temp_thread, NULL, NULL, NULL,
                     TEMP_PRIORITY, 0, K_NO_WAIT);
 
-    return 0;  // Main function returns; threads continue running
+    k_thread_create(&light_thread_data, light_stack, STACK_SIZE,
+                    light_thread, NULL, NULL, NULL,
+                    LIGHT_PRIORITY, 0, K_NO_WAIT);
+
+    return 0;
 }
 
