@@ -1,6 +1,6 @@
 # ¿ Vitimonitor: Sistema Integrato per la Viticoltura di Precisione
 
-Vitimonitor è una piattaforma hardware e software progettata per supportare aziende vitivinicole nel monitoraggio ambientale e nella gestione agronomica di precisione.  
+Vitimonitor è una piattaforma hardware e software progettata per supportare aziende vitivinicole nel monitoraggio ambientale e nella gestione agronomica di precisione.
 Il sistema consente di raccogliere, analizzare e visualizzare dati in tempo reale dal vigneto per prendere decisioni basate su dati oggettivi e predittivi.
 
 ---
@@ -20,15 +20,15 @@ Il sistema consente di raccogliere, analizzare e visualizzare dati in tempo real
 ### 1. **Hardware**
 - **Nodi sensore** basati su ESP32 + moduli LoRaWAN
 - Sensori ambientali:
-  - Temperatura e umidità dell¿aria
-  - Umidità del suolo (profilo multilivello: 10/30/60 cm)
-  - Luminosità (lux + PAR opzionale)
-  - Leaf Wetness Sensor (opzionale)
-  - Microsonde termiche per grappolo (opzionale)
+- Temperatura e umidità dell¿aria
+- Umidità del suolo (profilo multilivello: 10/30/60 cm)
+- Luminosità (lux + PAR opzionale)
+- Leaf Wetness Sensor (opzionale)
+- Microsonde termiche per grappolo (opzionale)
 - **Alimentazione** a pannello solare + batteria
 - **Gateway LoRaWAN**:
-  - Scheda custom o gateway commerciale (The Things Network)
-  - Connessione Internet: LTE / Ethernet / Wi-Fi
+- Scheda custom o gateway commerciale (The Things Network)
+- Connessione Internet: LTE / Ethernet / Wi-Fi
 
 ---
 
@@ -43,10 +43,10 @@ Il sistema consente di raccogliere, analizzare e visualizzare dati in tempo real
 #### Frontend Web
 - Web app per PC (enologo, manager, agronomo)
 - Dashboard con:
-  - Mappe georeferenziate
-  - Grafici storici e in tempo reale
-  - Allarmi e notifiche
-  - Gestione microzone
+- Mappe georeferenziate
+- Grafici storici e in tempo reale
+- Allarmi e notifiche
+- Gestione microzone
 
 #### App Mobile
 - App per operatori in campo
@@ -68,12 +68,12 @@ Il sistema consente di raccogliere, analizzare e visualizzare dati in tempo real
 
 ## ¿ Target Utente
 
-| Ruolo             | Funzionalità Principali                         |
+| Ruolo | Funzionalità Principali |
 |-------------------|-------------------------------------------------|
-| **Manager aziendale** | Analisi performance, confronto tra annate     |
-| **Enologo**        | Pianificazione vendemmia, maturazione uva       |
-| **Agronomo**       | Analisi fenologia, rischio malattie, irrigazione|
-| **Tecnico di campo** | Verifica sensori, note, alert, gestione zona   |
+| **Manager aziendale** | Analisi performance, confronto tra annate |
+| **Enologo**| Pianificazione vendemmia, maturazione uva |
+| **Agronomo** | Analisi fenologia, rischio malattie, irrigazione|
+| **Tecnico di campo** | Verifica sensori, note, alert, gestione zona |
 
 ---
 
