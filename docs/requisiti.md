@@ -1,74 +1,107 @@
-# Documento Requisiti di Sistema (SRS) – Vitimonitor
+# 📐 Requisiti Tecnici del Sistema Agritrust
 
-## 1. Introduzione
+Documento di specifica tecnica per la progettazione hardware, backend e frontend del sistema integrato per il monitoraggio viticolo.
 
-**Vitimonitor** è un sistema embedded progettato per l’agricoltura di precisione, con particolare attenzione alla sicurezza e affidabilità. Integra il Root of Trust OpenTitan per garantire autenticità, integrità e riservatezza dei dati raccolti da sensori ambientali, e supporta comunicazioni sicure verso backend remoti per analisi e tracciabilità.
+---
 
-## 2. Scopo
+## 🧱 1. Hardware
 
-Fornire agli operatori agricoli, startup agri-tech e cooperative un nodo IoT sicuro che permetta monitoraggio ambientale, aggiornamenti remoti e auditing affidabile dei dati, proteggendo il sistema da attacchi informatici e manomissioni.
+### 1.1 Nodo Sensore
 
-## 3. Requisiti di sistema
+| Componente         | Descrizione                              |
+|--------------------|------------------------------------------|
+| Microcontrollore   | ESP32 (dual core, Wi-Fi, BT, basso consumo) |
+| Comunicazione      | LoRa SX1276 o RFM95W (868 MHz EU)        |
+| Alimentazione      | Batteria Li-Ion 3.7V + pannello solare   |
+| PCB                | Custom, IP65, dimensioni compatte        |
 
-### 3.1 Requisiti funzionali
+### 1.2 Sensori Supportati
 
-| Codice | Descrizione |
-|--------|-------------|
-| **RF1** | Il sistema deve raccogliere dati da sensori ambientali quali umidità, temperatura, luminosità e posizione GPS con frequenza configurabile (default 5 minuti). |
-| **RF2** | Deve eseguire il boot solo se il firmware è verificato e firmato tramite Root of Trust OpenTitan (secure boot). |
-| **RF3** | I dati raccolti devono essere firmati digitalmente con chiavi crittografiche gestite esclusivamente da OpenTitan. |
-| **RF4** | Il sistema deve inviare i dati firmati a un backend remoto tramite protocolli di rete selezionabili: LoRaWAN, WiFi, LTE. |
-| **RF5** | Deve supportare aggiornamenti firmware over-the-air (FOTA), con verifica della firma digitale da parte di OpenTitan prima dell’installazione. |
-| **RF6** | Deve mantenere un registro locale sicuro, immutabile e crittografato degli eventi di sistema e delle trasmissioni dati (logging). |
-| **RF7** | Deve permettere la configurazione remota sicura di parametri di raccolta dati, frequenza e protocolli di rete. |
-| **RF8** | Il sistema deve rilevare e segnalare anomalie hardware/software via messaggi firmati al backend. |
+| Sensore                        | Tipo/Modello suggerito              |
+|-------------------------------|-------------------------------------|
+| Temperatura/UR aria           | DHT22 / SHT31 / BME280              |
+| Umidità suolo (3 profondità)  | Capacitivo o resistivo calibrato    |
+| Luminosità                    | BH1750 / TSL2561 / Sensore PAR      |
+| Leaf Wetness (opzionale)      | Decagon LWS                         |
+| Temperatura grappolo (opt.)   | Termocoppia tipo K o NTC su cavo    |
 
-### 3.2 Requisiti non funzionali
+---
 
-| Codice | Descrizione |
-|--------|-------------|
-| **RNF1** | La durata della batteria integrata deve garantire almeno 48 ore di funzionamento continuo senza ricarica. |
-| **RNF2** | Il sistema deve operare correttamente in un intervallo di temperatura ambientale compreso tra -10°C e +50°C, con umidità fino al 90% senza condensa. |
-| **RNF3** | Il tempo massimo di latenza tra la lettura dei dati sensoriali e la trasmissione al backend non deve superare i 5 minuti. |
-| **RNF4** | La connettività di rete deve essere resiliente a interruzioni temporanee e garantire il ripristino automatico della comunicazione. |
-| **RNF5** | L’interfaccia utente (web o app mobile) deve essere intuitiva e accessibile con livelli di autorizzazione differenziati (amministratore, operatore, viewer). |
-| **RNF6** | Il sistema deve essere scalabile per integrare ulteriori sensori o moduli di comunicazione senza modifiche sostanziali al firmware. |
-| **RNF7** | Il sistema deve essere progettato per un’installazione rapida sul campo da personale con competenze tecniche base. |
+## 📶 2. Gateway LoRaWAN
 
-### 3.3 Requisiti di sicurezza
+| Opzione               | Specifiche                            |
+|-----------------------|----------------------------------------|
+| Acquisto gateway      | The Things Indoor Gateway / RAK7258    |
+| Gateway custom        | ESP32 + LoRa concentratore + LTE/Wi-Fi |
+| Backend connesso      | The Things Stack (TTN) o ChirpStack    |
 
-| Codice | Descrizione |
-|--------|-------------|
-| **RS1** | Il boot deve essere protetto da un meccanismo di secure boot basato su OpenTitan, che verifica l’integrità e autenticità del firmware. |
-| **RS2** | Tutti i dati trasmessi devono essere firmati digitalmente utilizzando chiavi private protette da OpenTitan, garantendo autenticità e integrità. |
-| **RS3** | Deve essere implementato un meccanismo di rilevamento tentativi di manomissione hardware (tamper detection), con allarme e blocco sicuro in caso di violazione. |
-| **RS4** | Le chiavi crittografiche devono essere generate e conservate esclusivamente nel dominio sicuro di OpenTitan, senza mai uscire dall’hardware. |
-| **RS5** | Il sistema deve effettuare il logging immutabile degli eventi di sistema e delle comunicazioni, con firme digitali che ne garantiscano la non alterabilità. |
-| **RS6** | Gli aggiornamenti firmware devono essere firmati e verificati prima dell’applicazione, per prevenire installazioni di software malevoli. |
-| **RS7** | La comunicazione tra nodo e backend deve essere cifrata con protocolli standard (es. TLS, LoRaWAN encryption). |
-| **RS8** | Deve essere garantito un processo di gestione sicura delle chiavi, inclusa la possibilità di rotazione periodica. |
+---
 
-### 3.4 Requisiti di interfaccia
+## ☁️ 3. Backend
 
-| Codice | Descrizione |
-|--------|-------------|
-| **RI1** | Il sistema deve fornire un’interfaccia web responsive per configurazione, monitoraggio e diagnostica, accessibile tramite autenticazione sicura. |
-| **RI2** | Deve offrire API RESTful e/o MQTT per l’invio e la ricezione di dati tra nodo e backend. |
-| **RI3** | Deve supportare protocolli di comunicazione LoRaWAN, WiFi 802.11 b/g/n e LTE Cat-M1 o NB-IoT, configurabili via software. |
-| **RI4** | Deve integrare notifiche push o e-mail configurabili per segnalazioni di eventi critici o anomalie. |
+| Componente        | Tecnologia suggerita                       |
+|-------------------|--------------------------------------------|
+| Database          | InfluxDB (time-series) o PostgreSQL        |
+| API               | RESTful API o GraphQL                      |
+| Agronomic Engine  | Calcolo GDD, ET0, modelli rischio          |
+| Notifiche         | Firebase Cloud Messaging / Email alerts    |
 
-## 4. Vincoli
+---
 
-- Utilizzo obbligatorio di OpenTitan come Root of Trust per sicurezza hardware.
-- Supporto iniziale per sensori standard di umidità, temperatura, luminosità e GPS.
-- Alimentazione primaria a batteria, con possibilità di estensione tramite pannello solare.
-- Compatibilità con backend cloud standard (es. AWS IoT, Azure IoT Hub) tramite API.
+## 💻 4. Frontend Web (PC)
 
-## 5. Glossario
+| Utente Target     | Enologo, Manager, Agronomo                  |
+|-------------------|---------------------------------------------|
+| Tecnologie        | React / Next.js / TailwindCSS               |
+| Funzionalità      | Mappe, Dashboard, Cronologia, Alert         |
+| Sicurezza         | Login, livelli accesso, crittografia        |
 
-- **OpenTitan:** progetto open source per Root of Trust hardware sicuro.
-- **Root of Trust:** componente hardware/software affidabile che garantisce sicurezza delle operazioni crittografiche.
-- **FOTA:** Firmware Over The Air, aggiornamenti firmware da remoto.
-- **Tamper detection:** rilevamento di manomissioni fisiche o tentativi di compromissione hardware.
-- **API:** Application Programming Interface, interfaccia per comunicare tra software.
+---
+
+## 📱 5. App Mobile (Campo)
+
+| Utente Target     | Operatore tecnico in vigna                  |
+|-------------------|---------------------------------------------|
+| Tecnologie        | Flutter / React Native                      |
+| Funzionalità      | Sensori vicini, alert, inserimento note     |
+| Offline mode      | Sì, con sync dati non appena connesso       |
+
+---
+
+## 📊 6. Dashboard & Analytics
+
+| Visualizzazione         | Grafici interattivi, mappe, filtri temporali |
+| Modelli predittivi      | Fitopatie, fenologia, vendemmia               |
+| Esportazione dati       | CSV, Excel, API                               |
+| Alert intelligenti      | Soglie dinamiche e contesto (meteo, fase)     |
+
+---
+
+## 🔐 7. Sicurezza & Scalabilità
+
+- Crittografia dei dati LoRaWAN
+- HTTPS per tutti i servizi
+- Ruoli e permessi differenziati
+- Scalabilità cloud-native (Docker/Kubernetes optional)
+
+---
+
+## 🧪 8. MVP Target
+
+| Modulo       | Obiettivo minimo                                |
+|--------------|--------------------------------------------------|
+| Hardware     | 3 nodi sensori + 1 gateway TTN                   |
+| Backend      | Raccolta dati, calcolo GDD, ET0                  |
+| Web App      | Dashboard con mappa e grafici base               |
+| Mobile App   | Alert + visualizzazione locale + note            |
+
+---
+
+## 🗓️ Roadmap Prossimi Step
+
+1. Disegno PCB nodo sensore e primo prototipo
+2. Scelta gateway e test LoRaWAN con TTN
+3. Backend mock + visualizzazioni minime
+4. App mobile testabile (Flutter)
+5. Test in campo e feedback con 2–3 aziende
 
