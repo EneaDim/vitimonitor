@@ -1,6 +1,0 @@
-config ROHM_BT1750_EMUL
-        bool "Emulate rohm_bt1750_emul with i2c interface"
-  default n
-        depends on EMUL
-        help
-          This is an emulator for the Sensirion SHT3XD temperature and humidity sensor.

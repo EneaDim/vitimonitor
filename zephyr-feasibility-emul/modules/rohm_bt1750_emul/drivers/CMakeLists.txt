@@ -1,1 +1,0 @@
-add_subdirectory_ifdef(CONFIG_ROHM_BT1750_EMUL rohm_bt1750_emul)

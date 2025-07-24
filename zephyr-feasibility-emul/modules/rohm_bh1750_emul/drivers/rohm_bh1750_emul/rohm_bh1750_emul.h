@@ -1,5 +1,5 @@
-#ifndef ZEPHYR_DRIVERS_SENSOR_ROHM_BT1750_EMUL_H_
-#define ZEPHYR_DRIVERS_SENSOR_ROHM_BT1750_EMUL_H_
+#ifndef ZEPHYR_DRIVERS_SENSOR_ROHM_BH1750_EMUL_H_
+#define ZEPHYR_DRIVERS_SENSOR_ROHM_BH1750_EMUL_H_
 
 #include <zephyr/device.h>
 #include <zephyr/drivers/i2c_emul.h>
@@ -11,17 +11,17 @@
 extern "C" {
 #endif
 
-struct rohm_bt1750_emul_api {
+struct rohm_bh1750_emul_api {
     int (*set)(const struct device *dev, uint16_t data_raw);
 };
 
-struct rohm_bt1750_emul_cfg {
+struct rohm_bh1750_emul_cfg {
     uint16_t addr;
 };
 
-struct rohm_bt1750_emul_data {
+struct rohm_bh1750_emul_data {
     struct i2c_emul emul;
-    const struct rohm_bt1750_emul_cfg *cfg;
+    const struct rohm_bh1750_emul_cfg *cfg;
     struct device *i2c;
     uint16_t data_raw;    /* Latest light measurement raw value */
     bool powered_on;
@@ -36,10 +36,10 @@ struct rohm_bt1750_emul_data {
  * @param data_raw Raw measurement value (16-bit)
  * @return 0 on success, negative error code on failure
  */
-static inline int rohm_bt1750_emul_set_measurement(const struct device *dev,
+static inline int rohm_bh1750_emul_set_measurement(const struct device *dev,
                                                    uint16_t data_raw)
 {
-    const struct rohm_bt1750_emul_api *api = (const struct rohm_bt1750_emul_api *)dev->api;
+    const struct rohm_bh1750_emul_api *api = (const struct rohm_bh1750_emul_api *)dev->api;
 
     if (!api || !api->set) {
         return -ENOTSUP;
@@ -55,11 +55,11 @@ static inline int rohm_bt1750_emul_set_measurement(const struct device *dev,
  * @param lux Pointer to store converted lux value (can be NULL)
  * @return 0 on success, negative error code on failure
  */
-int rohm_bt1750_emul_sample_fetch(const struct emul *emul, float *lux);
+int rohm_bh1750_emul_sample_fetch(const struct emul *emul, float *lux);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* ZEPHYR_DRIVERS_SENSOR_ROHM_BT1750_EMUL_H_ */
+#endif /* ZEPHYR_DRIVERS_SENSOR_ROHM_BH1750_EMUL_H_ */
 

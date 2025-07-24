@@ -1,7 +1,7 @@
 #define DT_DRV_COMPAT rohm_bh1750_emul
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(rohm_bt1750_emul, CONFIG_I2C_LOG_LEVEL);
+LOG_MODULE_REGISTER(rohm_bh1750_emul, CONFIG_I2C_LOG_LEVEL);
 
 #include <zephyr/device.h>
 #include <zephyr/drivers/emul.h>
@@ -12,13 +12,13 @@ LOG_MODULE_REGISTER(rohm_bt1750_emul, CONFIG_I2C_LOG_LEVEL);
 #include <string.h>
 #include <errno.h>
 
-#include "rohm_bt1750_emul.h"
+#include "rohm_bh1750_emul.h"
 
-static int rohm_bt1750_emul_transfer(const struct emul *target,
+static int rohm_bh1750_emul_transfer(const struct emul *target,
                                      struct i2c_msg *msgs, int num_msgs, int addr)
 {
-    const struct rohm_bt1750_emul_cfg *cfg = target->cfg;
-    struct rohm_bt1750_emul_data *data = target->data;
+    const struct rohm_bh1750_emul_cfg *cfg = target->cfg;
+    struct rohm_bh1750_emul_data *data = target->data;
 
     if (cfg->addr != addr) {
         LOG_ERR("I2C address mismatch");
@@ -101,9 +101,9 @@ static int rohm_bt1750_emul_transfer(const struct emul *target,
     return -EIO;
 }
 
-static int rohm_bt1750_emul_api_set(const struct device *dev, uint16_t data_raw)
+static int rohm_bh1750_emul_api_set(const struct device *dev, uint16_t data_raw)
 {
-    struct rohm_bt1750_emul_data *data = dev->data;
+    struct rohm_bh1750_emul_data *data = dev->data;
     if (!data) return -EINVAL;
 
     data->data_raw = data_raw;
@@ -111,17 +111,17 @@ static int rohm_bt1750_emul_api_set(const struct device *dev, uint16_t data_raw)
     return 0;
 }
 
-static const struct rohm_bt1750_emul_api rohm_bt1750_emul_driver_api = {
-    .set = rohm_bt1750_emul_api_set,
+static const struct rohm_bh1750_emul_api rohm_bh1750_emul_driver_api = {
+    .set = rohm_bh1750_emul_api_set,
 };
 
-static struct i2c_emul_api rohm_bt1750_emul_i2c_api = {
-    .transfer = rohm_bt1750_emul_transfer,
+static struct i2c_emul_api rohm_bh1750_emul_i2c_api = {
+    .transfer = rohm_bh1750_emul_transfer,
 };
 
-int rohm_bt1750_emul_sample_fetch(const struct emul *emul, float *lux)
+int rohm_bh1750_emul_sample_fetch(const struct emul *emul, float *lux)
 {
-    struct rohm_bt1750_emul_data *data = emul->data;
+    struct rohm_bh1750_emul_data *data = emul->data;
 
     if (!data->cmd_ready || !data->powered_on) {
         return -EIO;
@@ -138,12 +138,12 @@ int rohm_bt1750_emul_sample_fetch(const struct emul *emul, float *lux)
     return 0;
 }
 
-static int rohm_bt1750_emul_init(const struct emul *target, const struct device *parent)
+static int rohm_bh1750_emul_init(const struct emul *target, const struct device *parent)
 {
-    struct rohm_bt1750_emul_data *data = target->data;
+    struct rohm_bh1750_emul_data *data = target->data;
 
-    data->emul.api = &rohm_bt1750_emul_i2c_api;
-    data->emul.addr = ((const struct rohm_bt1750_emul_cfg *)target->cfg)->addr;
+    data->emul.api = &rohm_bh1750_emul_i2c_api;
+    data->emul.addr = ((const struct rohm_bh1750_emul_cfg *)target->cfg)->addr;
     data->emul.target = target;
     data->i2c = (struct device *)parent;
 
@@ -154,17 +154,17 @@ static int rohm_bt1750_emul_init(const struct emul *target, const struct device 
     return 0;
 }
 
-#define ROHM_BT1750_EMUL(n) \
-    static struct rohm_bt1750_emul_data rohm_bt1750_emul_data_##n; \
-    static const struct rohm_bt1750_emul_cfg rohm_bt1750_emul_cfg_##n = { \
+#define ROHM_BH1750_EMUL(n) \
+    static struct rohm_bh1750_emul_data rohm_bh1750_emul_data_##n; \
+    static const struct rohm_bh1750_emul_cfg rohm_bh1750_emul_cfg_##n = { \
         .addr = DT_INST_REG_ADDR(n), \
     }; \
     DEVICE_DT_INST_DEFINE(n, NULL, NULL, \
-        &rohm_bt1750_emul_data_##n, &rohm_bt1750_emul_cfg_##n, \
-        POST_KERNEL, I2C_INIT_PRIORITY + 1, &rohm_bt1750_emul_driver_api); \
-    EMUL_DT_INST_DEFINE(n, rohm_bt1750_emul_init, \
-        &rohm_bt1750_emul_data_##n, &rohm_bt1750_emul_cfg_##n, \
-        &rohm_bt1750_emul_i2c_api, &rohm_bt1750_emul_driver_api);
+        &rohm_bh1750_emul_data_##n, &rohm_bh1750_emul_cfg_##n, \
+        POST_KERNEL, I2C_INIT_PRIORITY + 1, &rohm_bh1750_emul_driver_api); \
+    EMUL_DT_INST_DEFINE(n, rohm_bh1750_emul_init, \
+        &rohm_bh1750_emul_data_##n, &rohm_bh1750_emul_cfg_##n, \
+        &rohm_bh1750_emul_i2c_api, &rohm_bh1750_emul_driver_api);
 
-DT_INST_FOREACH_STATUS_OKAY(ROHM_BT1750_EMUL)
+DT_INST_FOREACH_STATUS_OKAY(ROHM_BH1750_EMUL)
 

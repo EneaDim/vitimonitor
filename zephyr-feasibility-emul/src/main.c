@@ -9,7 +9,7 @@
 
 #ifdef CONFIG_EMUL
 #include "sensirion_sht3xd_emul.h"
-#include "rohm_bt1750_emul.h"
+#include "rohm_bh1750_emul.h"
 #endif
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);

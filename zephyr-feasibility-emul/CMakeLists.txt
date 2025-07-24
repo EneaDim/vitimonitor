@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.20.0)
 
 set(ZEPHYR_EXTRA_MODULES
     "${CMAKE_SOURCE_DIR}/modules/sensirion_sht3xd_emul"
-    "${CMAKE_SOURCE_DIR}/modules/rohm_bt1750_emul"
+    "${CMAKE_SOURCE_DIR}/modules/rohm_bh1750_emul"
 )
 
 # Include Zephyr

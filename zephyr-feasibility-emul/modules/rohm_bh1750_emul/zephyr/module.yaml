@@ -1,4 +1,4 @@
-name: rohm_bt1750_emul
+name: rohm_bh1750_emul
 build:
   cmake: .
   kconfig: Kconfig
