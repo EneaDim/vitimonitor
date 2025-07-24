@@ -6,8 +6,6 @@ Costruire un sistema hardware/software completo per l'agricoltura di precisione 
 
 ![Flusso del progetto](./images/roadmap_small.png)
 
----
-
 ## 🧩 Fase 1: MVP (Versione Minima Funzionante)
 **Obiettivo:** Validare il sistema su piccola scala
 
