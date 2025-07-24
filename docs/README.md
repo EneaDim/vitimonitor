@@ -7,10 +7,10 @@ Benvenuto nella documentazione tecnica e funzionale del progetto **Vitimonitor**
 Questa documentazione include:
 
 - 💡 L’idea progettuale
+- 🛣️ La roadmap evolutiva
+- 🔧 Il prototipo MVP
 - 📊 I modelli agronomici e predittivi
 - 📐 I requisiti funzionali e tecnici
-- 🔧 Il prototipo MVP
-- 🛣️ La roadmap evolutiva
 - 📋 Il questionario di validazione
 - 📘 I feedback raccolti da enologi
 
