@@ -1,8 +1,8 @@
 # 🍇  Vitimonitor - Documentazione
 
-![Schema sistema di viticoltura di precisione](./images/idea_small.png)
-
 Benvenuto nella documentazione tecnica e funzionale del progetto **Vitimonitor**, una piattaforma integrata per la gestione intelligente della viticoltura basata su modelli predittivi, sensori IoT, analisi dati e intelligenza artificiale.
+
+![Schema sistema di viticoltura di precisione](./images/idea_small.png)
 
 Questa documentazione include:
 
