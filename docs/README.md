@@ -10,9 +10,9 @@ Questa documentazione include:
 - 🛣️ La roadmap evolutiva
 - 🔧 Il prototipo MVP
 - 📊 I modelli agronomici e predittivi
-- 📐 I requisiti funzionali e tecnici
-- 📋 Il questionario di validazione
 - 📘 I feedback raccolti da enologi
+- 📋 Il questionario di validazione
+- 📐 I requisiti funzionali e tecnici
 
 Ogni sezione è pensata per accompagnare il team tecnico, gli stakeholder agronomi e i partner nello sviluppo e nella validazione del sistema.
 
