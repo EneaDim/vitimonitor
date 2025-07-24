@@ -56,7 +56,7 @@ static struct k_thread temp_thread_data;          // Thread control block for te
 // LED Thread
 // Periodically toggles the LED output
 
-void led_thread(void)
+void led_thread(void *arg1, void *arg2, void *arg3)
 {
     int ret;
     bool led_is_on = false;
@@ -76,7 +76,7 @@ void led_thread(void)
 // Temperature Thread
 // Periodically generates a sample and logs the result
 
-void temp_thread(void)
+void temp_thread(void *arg1, void *arg2, void *arg3)
 {
     while (1) {
         float temp, hum;
@@ -127,9 +127,17 @@ int main(void)
     LOG_INF("Devices ready. Starting threads...");
 
     // Create and start LED thread
-    k_thread_create(&led_thread_data, led_stack, STACK_SIZE,
-                    led_thread, NULL, NULL, NULL,
-                    LED_PRIORITY, 0, K_NO_WAIT);
+    k_thread_create(&led_thread_data, // k_thread struct reference
+                    led_stack,        // stack defined
+                    STACK_SIZE,       // stack size
+                    led_thread,       // function
+                    NULL,             // arg1
+                    NULL,             // arg2
+                    NULL,             // arg3
+                    LED_PRIORITY,     // priority
+                    0,                // options
+                    K_NO_WAIT         // delay
+    );
 
     // Create and start temperature thread
     k_thread_create(&temp_thread_data, temp_stack, STACK_SIZE,
