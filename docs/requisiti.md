@@ -1,4 +1,4 @@
-# 📐 Requisiti Tecnici del Sistema Agritrust
+# 📐 Requisiti Tecnici del Sistema Vitimonitor
 
 Documento di specifica tecnica per la progettazione hardware, backend e frontend del sistema integrato per il monitoraggio viticolo.
 

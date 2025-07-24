@@ -1,6 +1,6 @@
-# ¿ Agritrust: Sistema Integrato per la Viticoltura di Precisione
+# ¿ Vitimonitor: Sistema Integrato per la Viticoltura di Precisione
 
-Agritrust è una piattaforma hardware e software progettata per supportare aziende vitivinicole nel monitoraggio ambientale e nella gestione agronomica di precisione.  
+Vitimonitor è una piattaforma hardware e software progettata per supportare aziende vitivinicole nel monitoraggio ambientale e nella gestione agronomica di precisione.  
 Il sistema consente di raccogliere, analizzare e visualizzare dati in tempo reale dal vigneto per prendere decisioni basate su dati oggettivi e predittivi.
 
 ---

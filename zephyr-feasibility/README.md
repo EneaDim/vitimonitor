@@ -1,66 +1,80 @@
-# Progetto IoT LoRa con Zephyr RTOS
+# 💡 Zephyr Feasibility Project
 
-## Descrizione
+## 📘 Descrizione
 
-Questo progetto raccoglie i dati da 4 sensori (temperatura, umidità aria, umidità suolo, luminosità), li comprime e li invia tramite LoRa utilizzando **Zephyr RTOS**. Il progetto è progettato per un dispositivo basato su **RAK3172** (LoRa STM32WLE5) e supporta la gestione del consumo energetico e la comunicazione LoRaWAN.
+Questo progetto ha lo scopo di verificare la **fattibilità di una simulazione ad alto livello** utilizzando **Zephyr RTOS**. L’intero comportamento del sistema — inclusi la simulazione del sensore e il controllo di un LED — è implementato nel codice applicativo (`main.c`), senza definire driver personalizzati.
 
-## Sensori Utilizzati
-
-- **DHT22**: Sensore di temperatura e umidità aria.
-- **Capacitive Soil Moisture Sensor**: Sensore di umidità del suolo.
-- **BH1750**: Sensore di luminosità.
-
-## Funzionalità
-
-- Raccolta dei dati dai sensori.
-- Compressione opzionale dei dati per risparmiare larghezza di banda.
-- Invio dei dati tramite LoRa.
-- Gestione del risparmio energetico con modalità di sleep.
-- Intervallo configurabile per la lettura dei sensori.
-
-## Configurazione del Progetto
-
-### Requisiti
-
-- **Zephyr RTOS** v2.6 o superiore.
-- **CMake** e **Ninja** per la build.
-- Hardware: **RAK3172** (o simili) per la comunicazione LoRa.
+È un esempio minimalista ed educativo utile per:
+- Valutare il funzionamento di Zephyr su diverse piattaforme.
+- Simulare il comportamento di periferiche in modo controllato.
+- Analizzare la portabilità tra ambienti `native_sim` e `esp32s3`.
 
 ---
 
-### Come Compilare e Caricare il Firmware
+## 📂 Struttura del Progetto
+zephyr-feasibility/
+├── CMakeLists.txt # Configurazione CMake per la build
+├── Makefile # Comandi abbreviati per build e flash
+├── README.md # Descrizione del progetto (questo file)
+├── boards/ # Overlay Devicetree per le board supportate
+│   ├── esp32s3_devkitc.overlay
+│   └── native_sim.overlay
+├── prj.conf # Configurazione Zephyr RTOS (log, thread, ecc.)
+├── src/
+    └── main.c # Applicazione principale con logica emulata
 
-1. Clona il repository:
-   ```bash
-   git clone https://github.com/tuo-repo/loara-sensors-zephyr.git
-   cd loara-sensors-zephyr
-   ```
-2. Configura il progetto per la tua board (ad esempio, se usi una board basata su RAK3172):
-   ```bash
-    west build -b rak3172_board
-   ```
-3. Carica il firmware sulla tua board:
-   ```bash
-   west flash
-   ```
-4. Monitoraggio della seriale per i log:
-   ```bash
-   west monitor
-   ```
 
 ---
 
-### Personalizzazione
+## ⚙️ Caratteristiche Principali
 
-- Compressione Dati: La compressione dei dati può essere abilitata o disabilitata modificando la variabile enable_compression nel codice.
+- **Simulazione LED**
+- Il LED è gestito via Devicetree (`led0`) e controllato ciclicamente da un thread.
+- Per `native_sim`, viene usato un controller GPIO emulato.
 
-- Intervallo di Lettura: L'intervallo di lettura dei sensori può essere modificato tramite la variabile sensor_read_interval.
+- **Simulazione sensore ambientale**
+- La lettura di temperatura e umidità è simulata all’interno del codice.
+- I valori variano in modo pseudo-casuale per test di logging e visualizzazione.
+
+- **Logging**
+- I valori simulati vengono stampati a intervalli regolari tramite il sistema di log di Zephyr.
+- Supporta stampa in virgola mobile (se abilitata da `CONFIG_CBPRINTF_FP_SUPPORT`).
+
+- **Thread separati**
+- Due thread distinti: uno per il LED e uno per la generazione e stampa dei dati ambientali.
+
+- **Compatibilità multipiattaforma**
+- Testato su `native_sim` per sviluppo e debug rapido.
+- Supporto preliminare per `esp32s3_devkitc` (con setup documentato in `docs/`).
 
 ---
 
-## Licenza
+## 📑 Documentazione
 
-Distribuito sotto la Licenza MIT. Vedi LICENSE per ulteriori informazioni.
+- `docs/setup_zephyr.md`: guida all'installazione di Zephyr SDK e toolchain.
+- `docs/esp32_setup.md`: guida alla configurazione e compilazione per ESP32-S3.
 
 ---
+
+## 🎯 Obiettivi del progetto
+
+✅ Verificare la capacità di Zephyr di gestire emulazione ad alto livello
+✅ Eseguire logging multithread e controllo di periferiche simulate
+✅ Testare overlay Devicetree semplificati per `native_sim` ed ESP32
+✅ Fornire un template base per progetti futuri più complessi
+
+---
+
+## ⚖️ Licenza
+
+Distribuito sotto licenza **MIT**.
+Consulta il file `LICENSE` (non incluso in questa versione) per i dettagli.
+
+---
+
+## ✍️ Autore
+
+Prototipo sviluppato da [Enea Dimatteo](https://github.com/eneadim)
+per l’infrastruttura **AgriTrust** (sperimentazione sensori e IoT agricolo).
+
 

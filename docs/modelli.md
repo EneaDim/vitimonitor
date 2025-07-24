@@ -1,6 +1,6 @@
 # 📊 Modelli Agronomici e Predittivi
 
-Questo documento descrive i modelli matematici, algoritmici e di intelligenza artificiale integrabili in **Agritrust** per supporto decisionale in viticoltura di precisione.
+Questo documento descrive i modelli matematici, algoritmici e di intelligenza artificiale integrabili in **Vitimonitor** per supporto decisionale in viticoltura di precisione.
 
 ---
 

@@ -1,6 +1,6 @@
-# 📘 Agritrust - Documentazione
+# 📘 Vitimonitor - Documentazione
 
-Benvenuto nella documentazione tecnica e funzionale del progetto **Agritrust**, una piattaforma integrata per la gestione intelligente della viticoltura basata su modelli predittivi, sensori IoT, analisi dati e intelligenza artificiale.
+Benvenuto nella documentazione tecnica e funzionale del progetto **Vitimonitor**, una piattaforma integrata per la gestione intelligente della viticoltura basata su modelli predittivi, sensori IoT, analisi dati e intelligenza artificiale.
 
 Questa documentazione include:
 
