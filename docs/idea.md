@@ -1,4 +1,4 @@
-# 🍇 Vitimonitor: Sistema Integrato per la Viticoltura di Precisione
+# 💡 Vitimonitor: Sistema Integrato per la Viticoltura di Precisione
 
 **Vitimonitor** è una piattaforma hardware e software progettata per supportare le aziende vitivinicole nel monitoraggio ambientale e nella gestione agronomica di precisione.
 Il sistema consente di raccogliere, analizzare e visualizzare dati in tempo reale dal vigneto, permettendo decisioni basate su dati oggettivi e predittivi.
