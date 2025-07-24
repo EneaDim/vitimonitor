@@ -1,28 +1,28 @@
-# üçá Vitimonitor: Sistema Integrato per la Viticoltura di Precisione
+# ø Vitimonitor: Sistema Integrato per la Viticoltura di Precisione
 
-Vitimonitor √® una piattaforma hardware e software progettata per supportare aziende vitivinicole nel monitoraggio ambientale e nella gestione agronomica di precisione.  
+Vitimonitor Ë una piattaforma hardware e software progettata per supportare aziende vitivinicole nel monitoraggio ambientale e nella gestione agronomica di precisione.  
 Il sistema consente di raccogliere, analizzare e visualizzare dati in tempo reale dal vigneto per prendere decisioni basate su dati oggettivi e predittivi.
 
 ---
 
-## üå± Obiettivi del Progetto
+## ø Obiettivi del Progetto
 
 - **Monitorare in tempo reale il vigneto** con sensori ambientali (suolo, aria, luce).
 - **Fornire supporto decisionale** ad agronomi, enologi e tecnici.
 - **Ridurre i rischi agronomici** (malattie, stress idrico, maturazione squilibrata).
 - **Ottimizzare risorse e interventi** (irrigazione, trattamenti, vendemmia).
-- **Supportare la tracciabilit√† e sostenibilit√†** nella produzione.
+- **Supportare la tracciabilit‡ e sostenibilit‡** nella produzione.
 
 ---
 
-## üîß Architettura del Sistema
+## ø Architettura del Sistema
 
 ### 1. **Hardware**
 - **Nodi sensore** basati su ESP32 + moduli LoRaWAN
 - Sensori ambientali:
-  - Temperatura e umidit√† dell¬øaria
-  - Umidit√† del suolo (profilo multilivello: 10/30/60 cm)
-  - Luminosit√† (lux + PAR opzionale)
+  - Temperatura e umidit‡ delløaria
+  - Umidit‡ del suolo (profilo multilivello: 10/30/60 cm)
+  - Luminosit‡ (lux + PAR opzionale)
   - Leaf Wetness Sensor (opzionale)
   - Microsonde termiche per grappolo (opzionale)
 - **Alimentazione** a pannello solare + batteria
@@ -56,19 +56,19 @@ Il sistema consente di raccogliere, analizzare e visualizzare dati in tempo real
 
 ---
 
-## üí° Funzionalit√† Smart (fasi successive)
+## ø Funzionalit‡ Smart (fasi successive)
 
 - Modelli predittivi per rischio peronospora, oidio, botrite
 - Previsione fenologica e data ottimale di vendemmia
 - AI per analisi visiva di grappoli (foto da operatore o droni)
 - Integrazione con droni/satelliti per mappa NDVI/NDRE
-- Tracciabilit√† blockchain-ready (vendemmia ¬ø bottiglia)
+- Tracciabilit‡ blockchain-ready (vendemmia ø bottiglia)
 
 ---
 
-## üìò Target Utente
+## ø Target Utente
 
-| Ruolo             | Funzionalit√† Principali                         |
+| Ruolo             | Funzionalit‡ Principali                         |
 |-------------------|-------------------------------------------------|
 | **Manager aziendale** | Analisi performance, confronto tra annate     |
 | **Enologo**        | Pianificazione vendemmia, maturazione uva       |
@@ -77,21 +77,20 @@ Il sistema consente di raccogliere, analizzare e visualizzare dati in tempo real
 
 ---
 
-## üéØ Valore Aggiunto
+## ø Valore Aggiunto
 
 - Decisioni basate su dati, non solo esperienza
-- Maggiore qualit√† dell¬øuva ¬ø miglior vino
+- Maggiore qualit‡ delløuva ø miglior vino
 - Riduzione costi e trattamenti inutili
 - Innovazione concreta, scalabile, sostenibile
 
 ---
 
-## üöÄ Prossimi Step
+## ø Prossimi Step
 
 1. Prototipo scheda nodo sensore
 2. Scelta/integrazione gateway
 3. MVP Web + App mobile
 4. Validazione con aziende test
 5. Estensione moduli agronomici/AI
-
 
