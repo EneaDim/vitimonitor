@@ -24,13 +24,13 @@ L’obiettivo è fornire uno strumento **accessibile, scientificamente robusto e
 
 [💡 Idea progettuale](idea.md)
 
-[📘 Richieste Enologi](enologo_requests.md)
-
 [🛣️ Roadmap progettuale](roadmap.md)
 
 [🛠️ MVP - Prototipo](mvp.md)
 
 [📊 Modelli agronomici](modelli.md)
+
+[📘 Richieste Enologi](enologo_requests.md)
 
 [📋 Questionario di validazione](questionario.md)
 
