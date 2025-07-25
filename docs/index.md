@@ -6,7 +6,7 @@
 Vitimonitor nasce per migliorare la **gestione agronomica della vite** attraverso l’integrazione di **sensori**, **modelli predittivi** e **interfacce intuitive**.
 L’obiettivo è fornire uno strumento **accessibile, scientificamente robusto e utile in campo** per supportare decisioni agronomiche strategiche.
 
-<img src="images/banner.png" width="80%" alt="Banner Vitimonitor" style="display: block; margin: auto;">
+<img src="images/banner.png" width="100%" alt="Banner Vitimonitor" style="display: block; margin: auto;">
 
 ---
 
