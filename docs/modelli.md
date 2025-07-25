@@ -2,7 +2,7 @@
 
 Questo documento descrive i modelli matematici, algoritmici e di intelligenza artificiale integrabili in **Vitimonitor** per supporto decisionale in viticoltura di precisione.
 
-![Modelli Predittivi](./images/modelli_small.png)
+<img src="../images/modelli.png" width="90%" alt="Modelli agronomici predittivi" style="display: block; margin: auto;">
 
 ---
 

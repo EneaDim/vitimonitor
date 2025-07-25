@@ -4,7 +4,9 @@ Sistema di Monitoraggio per il Settore Vitivinicolo
 ## 🎯 Obiettivo Generale
 Costruire un sistema hardware/software completo per l'agricoltura di precisione in vigneto, scalabile e basato sui reali bisogni degli enologi e viticoltori.
 
-![Flusso del progetto](./images/roadmap_small.png)
+<img src="../images/roadmap.png" width="100%" alt="Flusso del progetto" style="display: block; margin: auto;">
+
+---
 
 ## 🧩 Fase 1: MVP (Versione Minima Funzionante)
 **Obiettivo:** Validare il sistema su piccola scala

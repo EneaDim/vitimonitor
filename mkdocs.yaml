@@ -1,0 +1,70 @@
+site_name: Vitimonitor Docs
+site_description: Documentazione tecnica del progetto Vitimonitor
+site_author: Enea Dimroci
+edit_uri: edit/main/
+
+theme:
+  name: material
+  language: it
+  logo: images/banner.png
+  favicon: images/banner.ico
+  font:
+    text: Roboto
+    code: Roboto Mono
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: deep purple
+      toggle:
+        icon: material/weather-night
+        name: Passa al tema scuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: lime
+      toggle:
+        icon: material/weather-sunny
+        name: Passa al tema chiaro
+  features:
+    - navigation.sections
+    - navigation.expand
+    - toc.integrate
+    - content.code.copy
+    - content.action.edit
+    - palette.toggle
+    - navigation.top
+
+extra_css:
+  - styles/extra.css
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+  - awesome-pages
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.keys
+  - pymdownx.emoji
+  - pymdownx.snippets
+  - pymdownx.tabbed
+  - pymdownx.tasklist
+  - pymdownx.tilde
+
+nav:
+  - 🍇 Introduzione: index.md
+  - 💡 Idea progettuale: idea.md
+  - 🛣️ Roadmap progettuale: roadmap.md
+  - 🔧 MVP - Prototipo minimo: mvp.md
+  - 📊 Modelli agronomici: modelli.md
+  - 📘 Richieste Enologi: enologo_requests.md
+  - 📋 Questionario validazione: questionario.md
+  - 📐 Requisiti Tecnici: requisiti.md
+  - 📖 Glossario: glossario.md
+  - 💬 FAQ: faq.md
+

@@ -6,7 +6,7 @@ Sistema di Monitoraggio per Viticoltura di Precisione
 ## 🎯 Obiettivo
 Testare sul campo una versione semplificata ma utile del sistema, per validarne efficacia, utilità e desiderabilità presso aziende reali.
 
-![Prodotto a funzionalità minime](./images/mvp_small.png)
+<img src="../images/mvp.png" width="90%" alt="Prodotto a funzionalità minime" style="display: block; margin: auto;">
 
 ---
 
