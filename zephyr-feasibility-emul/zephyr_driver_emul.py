@@ -13,29 +13,52 @@ def update_root_cmakelists(output_folder, module_name):
         print(f"Warning: {cmakelists_path} does not exist. Skipping update.")
         return
 
+    extra_path = f"${{CMAKE_SOURCE_DIR}}/{output_folder}/{module_name}"
     with open(cmakelists_path, "r") as f:
         lines = f.readlines()
 
-    new_lines = []
-    inserted = False
-    # Compose relative path for ZEPHYR_EXTRA_MODULES
-    extra_modules_path = f"${{CMAKE_SOURCE_DIR}}/{output_folder}/{module_name}"
+    # Track state
+    in_extra_block = False
+    block_start = None
+    block_end = None
+    already_included = False
+    cmake_min_line = None
 
-    for line in lines:
-        new_lines.append(line)
-        # Insert after cmake_minimum_required line (first occurrence)
-        if not inserted and line.strip().startswith("cmake_minimum_required"):
-            new_lines.append(f'\nset(ZEPHYR_EXTRA_MODULES "{extra_modules_path}")\n')
-            inserted = True
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("cmake_minimum_required"):
+            cmake_min_line = i
 
-    if not inserted:
-        # If cmake_minimum_required not found, add at start
-        new_lines.insert(0, f'set(ZEPHYR_EXTRA_MODULES "{extra_modules_path}")\n')
+        if stripped.startswith("set(ZEPHYR_EXTRA_MODULES"):
+            in_extra_block = True
+            block_start = i
+            if extra_path in line:
+                already_included = True
+        elif in_extra_block:
+            if extra_path in stripped:
+                already_included = True
+            if ")" in stripped:
+                block_end = i
+                in_extra_block = False
+
+    # If already present, no need to update
+    if already_included:
+        print(f"ZEPHYR_EXTRA_MODULES already includes '{extra_path}' — nothing to do.")
+        return
+
+    # Modify or insert
+    if block_start is not None and block_end is not None:
+        # Insert before closing parenthesis
+        lines.insert(block_end, f'\t"{extra_path}"\n')
+        print(f"Added {extra_path} to existing ZEPHYR_EXTRA_MODULES block.")
+    else:
+        # Insert new block after cmake_minimum_required
+        insert_idx = cmake_min_line + 1 if cmake_min_line is not None else 0
+        lines.insert(insert_idx, f'\nset(ZEPHYR_EXTRA_MODULES\n\t"{extra_path}"\n)\n')
+        print(f"Inserted new ZEPHYR_EXTRA_MODULES block with {extra_path}.")
 
     with open(cmakelists_path, "w") as f:
-        f.writelines(new_lines)
-
-    print(f"Updated: {cmakelists_path} (added ZEPHYR_EXTRA_MODULES)")
+        f.writelines(lines)
 
 def update_root_prjconf(module_name):
     kconfig_path = os.path.join('./', "prj.conf")
@@ -74,6 +97,68 @@ def update_root_prjconf(module_name):
 
     print(f"Updated: {kconfig_path} (added {config_name} after CONFIG_SENSOR=y)")
 
+def update_native_sim_overlay(module_name, i2c_addr, interface="i2c0"):
+    overlay_path = os.path.join('./boards/native_sim.overlay')
+
+    # Prepare node label and compatible string
+    node_parts = module_name.split('_')[:-1]
+    label = node_parts[1].upper() if len(node_parts) > 1 else node_parts[0].upper()
+    node_label = '_'.join(node_parts)
+    compat = node_label.replace('_', ',') + "-emul"
+
+    new_node = f"""\
+    {node_label}: {node_label}@{i2c_addr} {{
+        compatible = "{compat}";
+        reg = <0x{i2c_addr}>;
+        status = "okay";
+        label = "{label}";
+    }};
+"""
+
+    # If overlay file does not exist, create it
+    if not os.path.isfile(overlay_path):
+        os.makedirs(os.path.dirname(overlay_path), exist_ok=True)
+        with open(overlay_path, "w") as f:
+            f.write(f"&{interface} {{\n    status = \"okay\";\n{new_node}}};\n")
+        print(f"Created and added node to: {overlay_path}")
+        return
+
+    with open(overlay_path, "r") as f:
+        lines = f.readlines()
+
+    if f"{node_label}@{i2c_addr}" in ''.join(lines):
+        print(f"Node '{node_label}@{i2c_addr}' already present in {overlay_path}")
+        return
+
+    new_lines = []
+    inside_iface = False
+    brace_level = 0
+    inserted = False
+
+    for line in lines:
+        stripped = line.strip()
+
+        if stripped.startswith(f"&{interface}"):
+            inside_iface = True
+
+        if inside_iface:
+            brace_level += line.count("{") - line.count("}")
+            if brace_level == 0 and not inserted:
+                # Right before the closing brace of &i2c0
+                new_lines.append(new_node)
+                inserted = True
+
+        new_lines.append(line)
+
+    # If interface block not found, append new full block
+    if not inserted:
+        print(f"Interface '&{interface}' not found. Appending new block at end.")
+        new_lines.append(f"\n&{interface} {{\n    status = \"okay\";\n{new_node}}};\n")
+
+    with open(overlay_path, "w") as f:
+        f.writelines(new_lines)
+
+    print(f"Updated: {overlay_path} (added node '{node_label}@{i2c_addr}')")
 def create_structure(base_path, module_name, interface, category):
     module_path = os.path.join(base_path, module_name)  # module root dir
 
@@ -107,7 +192,7 @@ config {module_name.upper()}
   default n
         depends on EMUL
         help
-          This is an emulator for the {module_nammodule_namee} sensor.
+          This is an emulator for the {module_name} sensor.
 """
 
     c_content = f"""\
@@ -116,87 +201,155 @@ config {module_name.upper()}
  * Interface: {interface}
  */
 
-#define DT_DRV_COMPAT {module_name}
+#define DT_DRV_COMPAT {module_name}  // TODO: assicurati che corrisponda a 'compatible' nel devicetree
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER({module_name.split('_')[-1]}, CONFIG_{interface.upper()}_LOG_LEVEL);
+LOG_MODULE_REGISTER({'_'.join(module_name.split('_')[-2:])}, CONFIG_{interface.upper()}_LOG_LEVEL);
 
 #include <zephyr/device.h>
 #include <zephyr/drivers/emul.h>
 #include <zephyr/drivers/{interface}.h>
 #include <zephyr/drivers/{interface}_emul.h>
-#include <zephyr/sys/byteorder.h>
+#include <zephyr/drivers/sensor.h>  // TODO: rimuovi se non è un sensore
+#include <zephyr/random/random.h>
 #include <string.h>
 #include <errno.h>
 
-#include "{module_name}.h"
+// -----------------------------------------------------------------------------
+// Strutture dati del driver emulato
 
+// TODO: adatta i campi secondo le caratteristiche del tuo dispositivo
 struct {module_name}_data {{
-    struct {interface}_emul emul;
-    const struct {module_name}_cfg *cfg;
-    struct device *{interface};
-    uint16_t data_raw;
-    bool cmd_ready;
-    uint8_t cmd_buf[2];
+    uint16_t raw_data;           // esempio: valore grezzo
+    //bool powered_on;
 }};
 
+// Configurazione statica
+// TODO: estendi se servono altri parametri dal devicetree
+struct {module_name}_cfg {{
+    uint16_t addr;
+}};
+
+// -----------------------------------------------------------------------------
+// Funzione di conversione raw → unità fisica (se sensore)
+
+static float raw_to_unit(uint16_t raw)
+{{
+    // TODO: personalizza la formula secondo il tuo sensore
+    return raw / 1.2f;
+}}
+
+// -----------------------------------------------------------------------------
+// API standard (sensor_driver_api) se usi driver sensor Zephyr
+
+// TODO: rimuovi se non usi il framework sensor
+
+static int {module_name}_sample_fetch(const struct device *dev, enum sensor_channel chan)
+{{
+    struct {module_name}_data *data = dev->data;
+    ARG_UNUSED(chan);
+
+    // Check if powered or not
+    //if (!data->powered_on) {{
+    //    return -EIO;
+    //}}
+
+    data->raw_data = 0x2000 + (sys_rand32_get() % 0x1000);  // TODO: sostituisci con logica realistica
+    return 0;
+}}
+
+static int {module_name}_channel_get(const struct device *dev,
+                                     enum sensor_channel chan,
+                                     struct sensor_value *val)
+{{
+    struct {module_name}_data *data = dev->data;
+
+    // TODO: personalizza il canale
+    if (chan != SENSOR_CHAN_LIGHT) {{
+        return -EIO;
+    }}
+
+    float value = raw_to_unit(data->raw_data);
+    sensor_value_from_double(val, value);
+    return 0;
+}}
+
+static const struct sensor_driver_api {module_name}_driver_api = {{
+    .sample_fetch = {module_name}_sample_fetch,
+    .channel_get = {module_name}_channel_get,
+}};
+
+// -----------------------------------------------------------------------------
+// I2C Emulator API
+
 static int {module_name}_transfer(const struct emul *target,
-                                 struct {interface}_msg *msgs, int num_msgs, int addr)
+                                  struct i2c_msg *msgs, int num_msgs, int addr)
 {{
     const struct {module_name}_cfg *cfg = target->cfg;
     struct {module_name}_data *data = target->data;
 
     if (cfg->addr != addr) {{
-        LOG_ERR("{interface.upper()} address mismatch");
         return -EIO;
     }}
 
-    // TODO: implement your transfer logic here
+    // TODO: personalizza la gestione dei comandi I2C
+
+    // Caso: scrittura comando
+    if (num_msgs == 1 && !(msgs[0].flags & I2C_MSG_READ)) {{
+        uint8_t cmd = msgs[0].buf[0];
+
+        switch (cmd) {{
+        case 0x00:  // Power down
+            //data->powered_on = false;
+            break;
+        case 0x01:  // Power on
+            //data->powered_on = true;
+            break;
+        case 0x07:  // Reset
+            //if (data->powered_on) {{
+            //    data->raw_data = 0;
+            //}}
+            break;
+        case 0x20: case 0x23:  // Modalità misura
+            //if (!data->powered_on) return -EIO;
+            break;
+        default:
+            return -EIO;
+        }}
+        return 0;
+    }}
+
+    // Caso: lettura dati (2 byte)
+    if (num_msgs == 1 && (msgs[0].flags & I2C_MSG_READ)) {{
+        //if (!data->powered_on) return -EIO;
+        if (msgs[0].len != 2) return -EIO;
+
+        msgs[0].buf[0] = data->raw_data >> 8;
+        msgs[0].buf[1] = data->raw_data & 0xFF;
+        return 0;
+    }}
 
     return -EIO;
 }}
 
-static int {module_name}_api_set(const struct device *dev, uint16_t data_raw)
-{{
-    struct {module_name}_data *data = dev->data;
-    if (!data) return -EINVAL;
-
-    data->data_raw = data_raw;
-    return 0;
-}}
-
-static const struct {module_name}_api {module_name}_driver_api = {{
-    .set = {module_name}_api_set,
-}};
-
-static struct {interface}_emul_api {module_name}_{interface}_api = {{
+static struct i2c_emul_api {module_name}_api = {{
     .transfer = {module_name}_transfer,
 }};
 
-int {module_name}_emul_sample_fetch(const struct emul *emul, float *temp_c, float *hum_pct)
-{{
-    const struct {module_name}_emul_cfg *cfg = emul->cfg;
-    struct {module_name}_emul_data *data = emul->data;
-
-    // TODO
-
-    return 0;
-}}
+// -----------------------------------------------------------------------------
+// Inizializzazione dell'emulatore
 
 static int {module_name}_init(const struct emul *target, const struct device *parent)
 {{
     struct {module_name}_data *data = target->data;
 
-    data->emul.api = &{module_name}_{interface}_api;
-    data->emul.addr = ((const struct {module_name}_cfg *)target->cfg)->addr;
-    data->emul.target = target;
-    data->{interface} = parent;
-
-    data->cmd_ready = false;
-    data->data_raw = 0x6666;  // Default dummy temperature
-
+    //data->powered_on = false;
+    data->raw_data = 0x6666;  // TODO: valore iniziale sensato
     return 0;
 }}
+
+// -----------------------------------------------------------------------------
+// Macro Devicetree per istanziare l’emulatore
 
 #define {module_name.upper()}_EMUL(n) \\
     static struct {module_name}_data {module_name}_data_##n; \\
@@ -208,7 +361,7 @@ static int {module_name}_init(const struct emul *target, const struct device *pa
         POST_KERNEL, I2C_INIT_PRIORITY + 1, &{module_name}_driver_api); \\
     EMUL_DT_INST_DEFINE(n, {module_name}_init, \\
         &{module_name}_data_##n, &{module_name}_cfg_##n, \\
-        &{module_name}_{interface}_api, &{module_name}_driver_api);
+        &{module_name}_api, &{module_name}_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY({module_name.upper()}_EMUL)
 """
@@ -217,9 +370,12 @@ DT_INST_FOREACH_STATUS_OKAY({module_name.upper()}_EMUL)
 #ifndef ZEPHYR_DRIVERS_SENSOR_{module_name.upper()}_H_
 #define ZEPHYR_DRIVERS_SENSOR_{module_name.upper()}_H_
 
+// -----------------------------------------------------------------------------
+// Zephyr core includes
+
 #include <zephyr/device.h>
-#include <zephyr/drivers/{interface}_emul.h>
 #include <zephyr/drivers/emul.h>
+#include <zephyr/drivers/{interface}_emul.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -227,28 +383,47 @@ DT_INST_FOREACH_STATUS_OKAY({module_name.upper()}_EMUL)
 extern "C" {{
 #endif
 
-struct {module_name}_emul_api {{
-    int (*set)(const struct device *dev, uint16_t temp_raw, uint16_t hum_raw);
+/**
+ * @brief {module_name.replace('_', ' ').title()} Emulator API
+ *
+ * API opzionale per test o manipolazione manuale dell'emulatore.
+ */
+struct {module_name}_api {{
+    // TODO: adatta i parametri del metodo 'set' secondo le esigenze del sensore
+    int (*set)(const struct device *dev, uint16_t data_raw);
 }};
 
-struct {module_name}_emul_cfg {{
-    uint16_t addr;
+/**
+ * @brief Configurazione statica dell'emulatore (da Devicetree)
+ */
+struct {module_name}_cfg {{
+    uint16_t addr;  ///< Indirizzo I2C assegnato nel devicetree
 }};
 
-struct {module_name}_emul_data {{
-    struct {interface}_emul emul;
-    const struct device *{interface};
+/**
+ * @brief Stato dinamico del dispositivo emulato
+ */
+struct {module_name}_data {{
+    struct {interface}_emul emul;     ///< Struttura base Zephyr per I2C emulator
+    const struct device *{interface}; ///< Controller I2C associato
 
-    uint8_t cmd_buf[2];
-    bool cmd_ready;
-
+    // TODO: personalizza i campi runtime secondo il tuo dispositivo
     uint16_t data_raw;
 }};
 
-static inline int {module_name}_emul_set_measurement(const struct device *dev,
-                                                    uint16_t data_raw)
+/**
+ * @brief Imposta un valore RAW simulato per l'emulatore
+ *
+ * Utile per test automatici (ztest) o simulazioni forzate.
+ *
+ * @param dev        Puntatore al device emulato
+ * @param data_raw   Valore grezzo da iniettare
+ * @return 0 se ok, -ENOTSUP se API mancante
+ */
+static inline int {module_name}_set_raw(const struct device *dev, uint16_t data_raw)
 {{
-    const struct {module_name}_emul_api *api = (const struct {module_name}_emul_api *)dev->api;
+    const struct {module_name}_api *api =
+        (const struct {module_name}_api *)dev->api;
 
     if (!api || !api->set) {{
         return -ENOTSUP;
@@ -257,13 +432,22 @@ static inline int {module_name}_emul_set_measurement(const struct device *dev,
     return api->set(dev, data_raw);
 }}
 
-int {module_name}_emul_sample_fetch(const struct emul *emul, float *data_c);
+/**
+ * @brief Simula una lettura e restituisce il valore convertito
+ *
+ * Può essere invocato direttamente in test, senza driver Zephyr.
+ *
+ * @param emul   Puntatore all'emulatore
+ * @param value  Output: unità fisica simulata (es. lux, °C, %RH, ecc.)
+ * @return 0 se ok, errore negativo altrimenti
+ */
+int {module_name}_sample_fetch(const struct emul *emul, float *value);
 
 #ifdef __cplusplus
 }}
 #endif
 
-#endif /* ZEPHYR_DRIVERS_SENSOR_{module_name.upper()}_H_ */
+#endif  // ZEPHYR_DRIVERS_SENSOR_{module_name.upper()}_H_
 """
 
     zephyr_module_yaml_content = f"""\
@@ -321,6 +505,7 @@ def main():
     parser = argparse.ArgumentParser(description="Create Zephyr driver module structure.")
     parser.add_argument("-m", "--module_name", required=True, help="Name of the module, e.g., sensirion_sht3xd_emul")
     parser.add_argument("-i", "--interface", required=True, help="Interface type, e.g., i2c, spi")
+    parser.add_argument("-a", "--address", required=True, help="Address at interface node")
     parser.add_argument("-c", "--category", default="sensor", help="Interface type, e.g., i2c, spi")
     parser.add_argument("-o", "--output", default=".", help="Base output directory (default current directory)")
 
@@ -329,6 +514,7 @@ def main():
     create_structure(args.output, args.module_name, args.interface, args.category)
     update_root_cmakelists(args.output, args.module_name)
     update_root_prjconf(args.module_name)
+    update_native_sim_overlay(args.module_name, args.address)
 if __name__ == "__main__":
     main()
 
