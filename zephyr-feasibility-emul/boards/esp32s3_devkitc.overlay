@@ -20,7 +20,6 @@
 / {
 	  aliases {
         led0 = &led0;
-        sht3xd-emul0 = &sht3xd_emul;
 	  };
 
 
