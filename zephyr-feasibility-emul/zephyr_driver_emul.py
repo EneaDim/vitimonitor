@@ -159,6 +159,139 @@ def update_native_sim_overlay(module_name, i2c_addr, interface="i2c0"):
         f.writelines(new_lines)
 
     print(f"Updated: {overlay_path} (added node '{node_label}@{i2c_addr}')")
+
+def update_main_c(module_name):
+    main_c_path = os.path.join('./src/', "main.c")
+
+    if not os.path.isfile(main_c_path):
+        print(f"Warning: {main_c_path} does not exist. Skipping update.")
+        return
+
+    with open(main_c_path, "r") as f:
+        lines = f.readlines()
+
+    # Determine the correct interval for the sensor from the module name
+    driver_name = module_name.split('_')[0]
+    sensor_name = module_name.split('_')[1]
+
+    # Define the interval
+    interval_define = f"#define {sensor_name.upper()}_INTERVAL_MS   1000\n"
+    sensor_define = f"#define {module_name.upper()}_NODE DT_NODELABEL({module_name})\n"
+
+    # Prepare new lines for the update
+    new_lines = []
+    inserted = False
+    inside_driver_includes = False
+    inside_constants_section = False
+    inside_thread_section = False
+    inside_main_function = False
+
+    for line in lines:
+        # Insert driver include section after kernel includes
+        if not inserted and line.strip().startswith("#include <zephyr/kernel.h>"):
+            new_lines.append(line)
+            new_lines.append(f"#include \"{module_name}_emul.h\"\n")  # Add the driver include
+            inserted = True
+            continue
+
+        # Place the interval define in constants section after other defines
+        if not inside_constants_section and line.strip().startswith("#define LED_BLINK_INTERVAL_MS"):
+            new_lines.append(line)
+            new_lines.append(interval_define)  # Add interval for the sensor
+            new_lines.append(sensor_define)    # Add sensor node label
+            inside_constants_section = True
+            continue
+
+        # Insert thread stack and control block setup for the sensor in the thread section
+        if not inside_thread_section and line.strip().startswith("K_THREAD_STACK_DEFINE(led_stack"):
+            new_lines.append(line)
+            new_lines.append(f"K_THREAD_STACK_DEFINE({module_name}_stack, STACK_SIZE);\n")  # Add thread stack for sensor
+            new_lines.append(f"static struct k_thread {module_name}_thread_data;\n")  # Add thread control block for sensor
+            inside_thread_section = True
+            continue
+        
+        # Insert the sensor thread function definition in the thread section
+        if not inside_main_function and line.strip().startswith("int main(void)"):
+            new_lines.append(line)
+            new_lines.append(f"""
+void {module_name}_thread(void *arg1, void *arg2, void *arg3)
+{{
+    struct sensor_value lux;
+
+    while (1) {{
+        if (sensor_sample_fetch({module_name}_dev) == 0 &&
+            sensor_channel_get({module_name}_dev, SENSOR_CHAN_LIGHT, &lux) == 0) {{
+            float lf = sensor_value_to_double(&lux);
+            LOG_INF("{module_name} Light Intensity: %.2f lux", lf);
+        }} else {{
+            LOG_WRN("Failed to fetch {module_name} sample");
+        }}
+
+        k_msleep({sensor_name.upper()}_INTERVAL_MS);
+    }}
+}}
+            """)
+            inside_main_function = True
+            continue
+        
+        # Add the main function logic to create the sensor thread
+        if line.strip().startswith("int main(void)"):
+            new_lines.append(line)
+            new_lines.append(f"""
+    if (!device_is_ready({module_name}_dev)) {{
+        LOG_ERR("{module_name} sensor not ready");
+        return 0;
+    }}
+
+#ifdef CONFIG_EMUL
+    if (!device_is_ready({module_name}_emul->dev)) {{
+        LOG_ERR("{module_name} emulator not ready");
+        return 0;
+    }}
+#endif
+
+    k_thread_create(&{module_name}_thread_data, {module_name}_stack, STACK_SIZE,
+                    {module_name}_thread, NULL, NULL, NULL,
+                    {sensor_name.upper()}_PRIORITY, 0, K_NO_WAIT);
+            """)
+
+        # Add the rest of the lines unchanged
+        new_lines.append(line)
+
+    # If sections are not found, append them at the end
+    if not inserted:
+        new_lines.insert(0, f"#include \"{module_name}_emul.h\"\n")  # Add the driver include
+    if not inside_constants_section:
+        new_lines.append(interval_define)  # Add interval for the sensor
+        new_lines.append(sensor_define)    # Add sensor node label
+    if not inside_thread_section:
+        new_lines.append(f"K_THREAD_STACK_DEFINE({module_name}_stack, STACK_SIZE);\n")
+        new_lines.append(f"static struct k_thread {module_name}_thread_data;\n")
+    if not inside_main_function:
+        new_lines.append(f"""
+void {module_name}_thread(void *arg1, void *arg2, void *arg3)
+{{
+    struct sensor_value lux;
+
+    while (1) {{
+        if (sensor_sample_fetch({module_name}_dev) == 0 &&
+            sensor_channel_get({module_name}_dev, SENSOR_CHAN_LIGHT, &lux) == 0) {{
+            float lf = sensor_value_to_double(&lux);
+            LOG_INF("{module_name} Light Intensity: %.2f lux", lf);
+        }} else {{
+            LOG_WRN("Failed to fetch {module_name} sample");
+        }}
+
+        k_msleep({sensor_name.upper()}_INTERVAL_MS);
+    }}
+}}
+        """)
+
+    with open(main_c_path, "w") as f:
+        f.writelines(new_lines)
+
+    print(f"Updated: {main_c_path} (added driver and thread for '{module_name}')")
+
 def create_structure(base_path, module_name, interface, category):
     module_path = os.path.join(base_path, module_name)  # module root dir
 
@@ -515,6 +648,8 @@ def main():
     update_root_cmakelists(args.output, args.module_name)
     update_root_prjconf(args.module_name)
     update_native_sim_overlay(args.module_name, args.address)
+    #update_main_c(args.module_name)
+
 if __name__ == "__main__":
     main()
 
