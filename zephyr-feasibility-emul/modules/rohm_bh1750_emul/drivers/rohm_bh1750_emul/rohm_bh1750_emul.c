@@ -1,170 +1,189 @@
 #define DT_DRV_COMPAT rohm_bh1750_emul
 
-#include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(rohm_bh1750_emul, CONFIG_I2C_LOG_LEVEL);
-
 #include <zephyr/device.h>
+#include <zephyr/drivers/sensor.h>     // API sensor standard
 #include <zephyr/drivers/emul.h>
-#include <zephyr/drivers/i2c.h>
-#include <zephyr/drivers/i2c_emul.h>
-#include <zephyr/sys/byteorder.h>
+#include <zephyr/drivers/i2c_emul.h>   // Emulazione I2C
+#include <zephyr/logging/log.h>
 #include <zephyr/random/random.h>
-#include <string.h>
-#include <errno.h>
 
-#include "rohm_bh1750_emul.h"
+LOG_MODULE_REGISTER(bh1750_emul, CONFIG_SENSOR_LOG_LEVEL);
 
-static int rohm_bh1750_emul_transfer(const struct emul *target,
-                                     struct i2c_msg *msgs, int num_msgs, int addr)
-{
-    const struct rohm_bh1750_emul_cfg *cfg = target->cfg;
-    struct rohm_bh1750_emul_data *data = target->data;
+// -----------------------------------------------------------------------------
+// Strutture dati del driver
 
-    if (cfg->addr != addr) {
-        LOG_ERR("I2C address mismatch");
-        return -EIO;
-    }
-
-    // Handle command write (1-byte write)
-    if (num_msgs == 1 && !(msgs[0].flags & I2C_MSG_READ)) {
-        if (msgs[0].len != 1) {
-            LOG_ERR("Invalid command length");
-            return -EIO;
-        }
-
-        uint8_t cmd = msgs[0].buf[0];
-        data->last_cmd = cmd;
-
-        switch (cmd) {
-            case 0x00: // Power down
-                data->powered_on = false;
-                data->cmd_ready = false;
-                break;
-            case 0x01: // Power on
-                data->powered_on = true;
-                break;
-            case 0x07: // Reset (only works when powered on)
-                if (data->powered_on) {
-                    data->data_raw = 0;
-                    data->cmd_ready = false;
-                }
-                break;
-            // Measurement commands handled by sample_fetch, just mark ready here
-            case 0x10: // Continuously H-Resolution Mode
-            case 0x11: // Continuously H-Resolution Mode2
-            case 0x13: // Continuously L-Resolution Mode
-            case 0x20: // One Time H-Resolution Mode
-            case 0x21: // One Time H-Resolution Mode2
-            case 0x23: // One Time L-Resolution Mode
-                if (!data->powered_on) {
-                    LOG_ERR("Measurement command received while powered down");
-                    return -EIO;
-                }
-                data->cmd_ready = true; // Indicate measurement requested
-                break;
-            default:
-                LOG_WRN("Unsupported BH1750 command: 0x%02x", cmd);
-                return -EIO;
-        }
-
-        return 0;
-    }
-
-    // Handle read (expecting 2 bytes)
-    if (num_msgs == 1 && (msgs[0].flags & I2C_MSG_READ)) {
-        if (!data->powered_on) {
-            LOG_ERR("Read while powered down");
-            return -EIO;
-        }
-        if (!data->cmd_ready) {
-            LOG_ERR("Read requested but no measurement triggered");
-            return -EIO;
-        }
-        if (msgs[0].len != 2) {
-            LOG_ERR("Invalid read length, expected 2 bytes");
-            return -EIO;
-        }
-
-        // Return the stored raw data MSB first
-        msgs[0].buf[0] = data->data_raw >> 8;
-        msgs[0].buf[1] = data->data_raw & 0xFF;
-
-        // Clear cmd_ready flag for one-time modes (>= 0x20)
-        if (data->last_cmd >= 0x20) {
-            data->cmd_ready = false;
-        }
-
-        return 0;
-    }
-
-    LOG_ERR("Unsupported I2C message sequence");
-    return -EIO;
-}
-
-static int rohm_bh1750_emul_api_set(const struct device *dev, uint16_t data_raw)
-{
-    struct rohm_bh1750_emul_data *data = dev->data;
-    if (!data) return -EINVAL;
-
-    data->data_raw = data_raw;
-    data->cmd_ready = true;
-    return 0;
-}
-
-static const struct rohm_bh1750_emul_api rohm_bh1750_emul_driver_api = {
-    .set = rohm_bh1750_emul_api_set,
+// Stato dinamico del sensore emulato
+struct bh1750_emul_data {
+	uint16_t raw_lux;         // Valore grezzo di luminosità
+	bool powered_on;          // Stato accensione
+	bool measurement_ready;   // Indica se è disponibile un valore da leggere
 };
 
-static struct i2c_emul_api rohm_bh1750_emul_i2c_api = {
-    .transfer = rohm_bh1750_emul_transfer,
+// Configurazione statica (da devicetree)
+struct bh1750_emul_config {
+	uint16_t addr;            // Indirizzo I2C
 };
 
-int rohm_bh1750_emul_sample_fetch(const struct emul *emul, float *lux)
+// -----------------------------------------------------------------------------
+// Conversione RAW → LUX secondo datasheet BH1750
+
+static float raw_to_lux(uint16_t raw)
 {
-    struct rohm_bh1750_emul_data *data = emul->data;
-
-    if (!data->cmd_ready || !data->powered_on) {
-        return -EIO;
-    }
-
-    // Generate random measurement here instead of in transfer()
-    data->data_raw = 0x2000 + (sys_rand32_get() % 0x8000);
-
-    // Convert to lux according to datasheet: lux = raw / 1.2
-    if (lux) {
-        *lux = data->data_raw / 1.2f;
-    }
-
-    return 0;
+	return raw / 1.2f;
 }
 
-static int rohm_bh1750_emul_init(const struct emul *target, const struct device *parent)
+// -----------------------------------------------------------------------------
+// Funzione fetch: simula una nuova lettura
+
+static int bh1750_sample_fetch(const struct device *dev, enum sensor_channel chan)
 {
-    struct rohm_bh1750_emul_data *data = target->data;
+	struct bh1750_emul_data *data = dev->data;
 
-    data->emul.api = &rohm_bh1750_emul_i2c_api;
-    data->emul.addr = ((const struct rohm_bh1750_emul_cfg *)target->cfg)->addr;
-    data->emul.target = target;
-    data->i2c = (struct device *)parent;
+	ARG_UNUSED(chan);
 
-    data->cmd_ready = false;
-    data->powered_on = false;
-    data->data_raw = 0x6666;  // Default dummy light level
+	if (!data->powered_on) {
+		return -EIO;
+	}
 
-    return 0;
+	// Genera valore raw pseudo-random realistico
+	data->raw_lux = 0x2000 + (sys_rand32_get() % 0x1000);
+	data->measurement_ready = true;
+
+	return 0;
 }
 
-#define ROHM_BH1750_EMUL(n) \
-    static struct rohm_bh1750_emul_data rohm_bh1750_emul_data_##n; \
-    static const struct rohm_bh1750_emul_cfg rohm_bh1750_emul_cfg_##n = { \
-        .addr = DT_INST_REG_ADDR(n), \
-    }; \
-    DEVICE_DT_INST_DEFINE(n, NULL, NULL, \
-        &rohm_bh1750_emul_data_##n, &rohm_bh1750_emul_cfg_##n, \
-        POST_KERNEL, I2C_INIT_PRIORITY + 1, &rohm_bh1750_emul_driver_api); \
-    EMUL_DT_INST_DEFINE(n, rohm_bh1750_emul_init, \
-        &rohm_bh1750_emul_data_##n, &rohm_bh1750_emul_cfg_##n, \
-        &rohm_bh1750_emul_i2c_api, &rohm_bh1750_emul_driver_api);
+// -----------------------------------------------------------------------------
+// Funzione channel_get: converte valore grezzo in `sensor_value`
 
-DT_INST_FOREACH_STATUS_OKAY(ROHM_BH1750_EMUL)
+static int bh1750_channel_get(const struct device *dev,
+                              enum sensor_channel chan,
+                              struct sensor_value *val)
+{
+	struct bh1750_emul_data *data = dev->data;
+
+	if (chan != SENSOR_CHAN_LIGHT) {
+		return -ENOTSUP;
+	}
+
+	if (!data->measurement_ready) {
+		return -EIO;
+	}
+
+	float lux = raw_to_lux(data->raw_lux);
+	sensor_value_from_double(val, lux);
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------------
+// API standard sensor_driver_api per Zephyr
+
+static const struct sensor_driver_api bh1750_emul_driver_api = {
+	.sample_fetch = bh1750_sample_fetch,
+	.channel_get  = bh1750_channel_get,
+};
+
+// -----------------------------------------------------------------------------
+// Emulazione I2C per test automatici
+
+static int bh1750_emul_i2c_transfer(const struct emul *target,
+                                    struct i2c_msg *msgs,
+                                    int num_msgs,
+                                    int addr)
+{
+	const struct bh1750_emul_config *cfg = target->cfg;
+	struct bh1750_emul_data *data = target->data;
+
+	if (cfg->addr != addr) {
+		return -EIO;
+	}
+
+	// Scrittura di un comando (1 byte)
+	if (num_msgs == 1 && !(msgs[0].flags & I2C_MSG_READ)) {
+		uint8_t cmd = msgs[0].buf[0];
+
+		switch (cmd) {
+		case 0x00:  // Power down
+			data->powered_on = false;
+			data->measurement_ready = false;
+			break;
+		case 0x01:  // Power on
+			data->powered_on = true;
+			break;
+		case 0x07:  // Reset
+			if (data->powered_on) {
+				data->raw_lux = 0;
+				data->measurement_ready = false;
+			}
+			break;
+		case 0x10: case 0x11: case 0x13:  // Continuous mode
+		case 0x20: case 0x21: case 0x23:  // One-time mode
+			if (!data->powered_on) {
+				return -EIO;
+			}
+			data->measurement_ready = true;
+			break;
+		default:
+			return -EIO;
+		}
+		return 0;
+	}
+
+	// Lettura dati: 2 byte con valore grezzo
+	if (num_msgs == 1 && (msgs[0].flags & I2C_MSG_READ)) {
+		if (!data->powered_on || !data->measurement_ready) {
+			return -EIO;
+		}
+		if (msgs[0].len != 2) {
+			return -EIO;
+		}
+
+		msgs[0].buf[0] = data->raw_lux >> 8;
+		msgs[0].buf[1] = data->raw_lux & 0xFF;
+
+		// Dopo lettura, svuota dato per one-time
+		data->measurement_ready = false;
+		return 0;
+	}
+
+	// Messaggio non supportato
+	return -EIO;
+}
+
+// Tabella per Zephyr I2C emulator
+static struct i2c_emul_api bh1750_emul_i2c_api = {
+	.transfer = bh1750_emul_i2c_transfer,
+};
+
+// -----------------------------------------------------------------------------
+// Inizializzazione emulatore
+
+static int bh1750_emul_init(const struct emul *target, const struct device *parent)
+{
+	struct bh1750_emul_data *data = target->data;
+
+	data->powered_on = false;
+	data->measurement_ready = false;
+	data->raw_lux = 0x6666;  // Valore fittizio iniziale
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------------
+// Macro di istanziazione da devicetree
+
+#define BH1750_EMUL(n)                                                      \
+	static struct bh1750_emul_data bh1750_emul_data_##n;                    \
+	static const struct bh1750_emul_config bh1750_emul_cfg_##n = {          \
+		.addr = DT_INST_REG_ADDR(n),                                        \
+	};                                                                       \
+	DEVICE_DT_INST_DEFINE(n, NULL, NULL,                                    \
+		&bh1750_emul_data_##n, &bh1750_emul_cfg_##n,                        \
+		POST_KERNEL, I2C_INIT_PRIORITY + 1, &bh1750_emul_driver_api);              \
+	EMUL_DT_INST_DEFINE(n, bh1750_emul_init,                                \
+		&bh1750_emul_data_##n, &bh1750_emul_cfg_##n,                        \
+		&bh1750_emul_i2c_api, &bh1750_emul_driver_api);
+
+// Istanzia tutte le istanze abilitate nel devicetree
+DT_INST_FOREACH_STATUS_OKAY(BH1750_EMUL)
 
