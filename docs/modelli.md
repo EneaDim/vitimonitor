@@ -1,6 +1,7 @@
 # 📊 Modelli Agronomici e Predittivi
 
-Questo documento descrive i modelli matematici, algoritmici e di intelligenza artificiale integrabili in **Vitimonitor** per supporto decisionale in viticoltura di precisione.
+Vitimonitor integra strumenti agronomici e predittivi per aiutarti a capire **quando intervenire** e **cosa aspettarti dalla stagione**, con modelli concreti validati sul campo.
+Ogni modello si basa su dati raccolti dal vigneto e restituisce informazioni comprensibili, utili per la tua gestione quotidiana.
 
 <img src="../images/modelli.png" width="90%" alt="Modelli agronomici predittivi" style="display: block; margin: auto;">
 
@@ -286,13 +287,13 @@ Questo documento descrive i modelli matematici, algoritmici e di intelligenza ar
 
 ### Visualizzazione:
 
-| Modello               | Interfaccia di visualizzazione              |
+| Modello | Interfaccia di visualizzazione|
 |-----------------------|---------------------------------------------|
-| GDD                   | Grafico lineare con soglie evidenziate      |
-| ET₀ / Bilancio idrico | Istogramma + mappa cromatica                |
-| Malattie              | Semaforo rischio (verde/giallo/rosso)       |
-| AI visivo             | Galleria immagini con diagnosi automatica   |
-| Vendemmia             | Timeline con finestre consigliate           |
+| GDD | Grafico lineare con soglie evidenziate|
+| ET₀ / Bilancio idrico | Istogramma + mappa cromatica|
+| Malattie| Semaforo rischio (verde/giallo/rosso) |
+| AI visivo | Galleria immagini con diagnosi automatica |
+| Vendemmia | Timeline con finestre consigliate |
 
 ---
 

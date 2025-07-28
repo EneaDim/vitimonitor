@@ -1,103 +1,68 @@
-# 💡 Vitimonitor: Sistema Integrato per la Viticoltura di Precisione
+# 💡 Vitimonitor: uno strumento per conoscere meglio il vigneto
 
-**Vitimonitor** è una piattaforma hardware e software progettata per supportare le aziende vitivinicole nel monitoraggio ambientale e nella gestione agronomica di precisione.
-Il sistema consente di raccogliere, analizzare e visualizzare dati in tempo reale dal vigneto, permettendo decisioni basate su dati oggettivi e predittivi.
+**Vitimonitor** è un sistema progettato per chi vive e lavora tra i filari.
+Ti aiuta a osservare cosa accade nel vigneto in tempo reale, con dati affidabili e comprensibili.
+Ogni informazione raccolta è pensata per migliorare il lavoro quotidiano e facilitare le decisioni in campo.
 
-<img src="../images/idea.png" width="80%" alt="Idea sulla viticoltura di precisione" style="display: block; margin: auto;">
-
----
-
-## 🌱 Obiettivi del Progetto
-
-- **Monitorare in tempo reale il vigneto** con sensori ambientali (suolo, aria, luce).
-- **Fornire supporto decisionale** ad agronomi, enologi e tecnici.
-- **Ridurre i rischi agronomici** (malattie, stress idrico, maturazione squilibrata).
-- **Ottimizzare risorse e interventi** (irrigazione, trattamenti, vendemmia).
-- **Supportare la tracciabilità e la sostenibilità** della produzione.
+<img src="../images/idea.png" width="80%" alt="Viticoltura di precisione" style="display: block; margin: auto;">
 
 ---
 
-## 🔧 Architettura del Sistema
+## 🌱 Perché usare Vitimonitor
 
-### 1. **Hardware**
-
-- **Nodi sensore** basati su ESP32 + moduli LoRaWAN
-- Sensori ambientali:
-- Temperatura e umidità dell’aria
-- Umidità del suolo (profilo multilivello: 10/30/60 cm)
-- Luminosità (lux + PAR opzionale)
-- Sensore Leaf Wetness (opzionale)
-- Microsonde termiche per grappolo (opzionale)
-- **Alimentazione** tramite pannello solare e batteria ricaricabile
-- **Gateway LoRaWAN**:
-- Scheda custom o gateway commerciale (es. The Things Network)
-- Connessione Internet: LTE / Ethernet / Wi-Fi
+- Ti mostra quando il suolo è troppo secco o la vite soffre il caldo.
+- Ti aiuta a decidere **quando irrigare o trattare**, evitando sprechi.
+- Ti avvisa **prima che ci siano problemi**, come stress o malattie.
+- Ti fa risparmiare tempo e risorse, con informazioni già pronte all’uso.
+- Ti permette di vedere tutto su una **dashboard chiara**, accessibile da PC o smartphone.
 
 ---
 
-### 2. **Software**
+## 🔍 Come funziona
 
-#### Backend
-
-- Acquisizione e normalizzazione dati
-- Database time-series (InfluxDB, TimescaleDB)
-- API REST/GraphQL per i client
-- Algoritmi agronomici e modelli predittivi (GDD, ET0, patologie)
-
-#### Frontend Web
-
-- Web app per PC (enologo, manager, agronomo)
-- Dashboard con:
-    - Mappe georeferenziate
-    - Grafici storici e in tempo reale
-    - Allarmi e notifiche
-    - Gestione microzone
-
-#### App Mobile
-
-- App per operatori in campo
-- Visualizzazione rapida dei sensori vicini
-- Inserimento note, foto, osservazioni
-- Ricezione di alert mirati
+- Dispositivi semplici da installare rilevano **temperatura**, **umidità** e **luce**.
+- I dati vengono trasmessi automaticamente a un punto di raccolta centrale.
+- Tutto viene mostrato su una dashboard facile da leggere, con **grafici**, **avvisi**, e **cronologie**.
+- Non serve nessuna configurazione complessa: pensato per chi lavora sul campo.
 
 ---
 
-## 💡 Funzionalità Smart (sviluppi futuri)
+## 📊 Cosa puoi osservare
 
-- Modelli predittivi per rischio peronospora, oidio, botrite
-- Previsione fenologica e data ottimale di vendemmia
-- AI per analisi visiva dei grappoli (foto da operatori o droni)
-- Integrazione con droni/satelliti per mappatura NDVI/NDRE
-- Tracciabilità blockchain-ready (dalla vendemmia alla bottiglia)
-
----
-
-## 📘 Target Utente
-
-| Ruolo| Funzionalità Principali |
-|--------------------|---------------------------------------------------------|
-| **Manager aziendale** | Analisi delle performance, confronto tra annate|
-| **Enologo** | Pianificazione vendemmia, analisi maturazione uva|
-| **Agronomo**| Monitoraggio fenologia, rischio malattie, irrigazione|
-| **Tecnico di campo** | Verifica sensori, gestione alert, note e osservazioni|
+- Se il vigneto ha bisogno di acqua o di essere protetto da un colpo di calore.
+- Come cambia il clima da una zona all’altra della stessa vigna.
+- Quando ci sono condizioni favorevoli a malattie fungine.
+- Come sta andando la stagione rispetto agli anni passati.
 
 ---
 
-## 🎯 Valore Aggiunto
+## 👤 A chi serve
 
-- Decisioni basate su dati oggettivi, non solo esperienza
-- Maggiore qualità dell’uva → miglior vino
-- Riduzione dei costi e trattamenti non necessari
-- Innovazione concreta, scalabile e sostenibile
+| Figura professionale | Come può usare Vitimonitor|
+|--------------------------|------------------------------------------------------|
+| **Viticoltore / Tecnico**| Controlla l’andamento del campo e riceve avvisi |
+| **Enologo**| Pianifica la vendemmia osservando maturazione e clima|
+| **Agronomo** | Analizza dati su suolo, clima e salute della vite |
+| **Titolare azienda** | Confronta stagioni e ottimizza investimenti |
 
 ---
 
-## 🚀 Prossimi Step
+## 🌟 I vantaggi pratici
 
-1. Prototipazione della scheda nodo sensore
-2. Scelta e integrazione del gateway
-3. MVP Web + App mobile
-4. Validazione in campo con aziende pilota
-5. Estensione dei moduli agronomici e AI
+- **Uva di qualità più alta**, più uniforme e più sana.
+- **Meno interventi inutili**: solo quando servono davvero.
+- **Controllo continuo**, anche se non sei fisicamente in vigna.
+- **Una gestione moderna** e sostenibile, senza perdere la tradizione.
 
+---
+
+## 🚀 Cosa stiamo realizzando
+
+1. I primi **moduli sensore** pronti da installare.
+2. Un **centro dati** per raccogliere e proteggere le informazioni.
+3. Una **dashboard semplice** per consultare i dati in pochi clic.
+4. Test sul campo con **aziende vitivinicole** che ci affiancano nella crescita.
+5. Nuove funzioni intelligenti per previsioni, allarmi automatici e supporto alle decisioni.
+
+---
 

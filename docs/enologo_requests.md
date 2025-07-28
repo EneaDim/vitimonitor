@@ -1,142 +1,181 @@
-# Sistema di Agricoltura di Precisione per il Settore Vitivinicolo
-## Richieste di un Enologo Esperto
+# 🍇 Sistema di Agricoltura di Precisione per il Settore Vitivinicolo
+## 🎯 Cosa chiede un enologo esperto
 
-### 👤 Profilo Utente
-**Tipo di utente target:** Enologo/Viticoltore di alta qualità
-**Obiettivo:**
-- Massimizzare la qualità dell’uva (zuccheri, acidità, fenoli, antociani, ecc.)
-- Minimizzare i rischi (fitopatie, stress idrico, squilibri produttivi)
-- Controllo microzonale del vigneto
+Vitimonitor nasce dall’ascolto diretto di chi lavora ogni giorno per ottenere la massima qualità dal vigneto.
+Questa sezione raccoglie le esigenze pratiche di **enologi e agronomi di alto profilo**, con l’obiettivo di supportarli nella **gestione tecnica, microzonale e predittiva** della produzione.
 
 ---
 
-## 📦 Sensori già disponibili
-- Temperatura dell’aria
-- Umidità dell’aria
-- Umidità del suolo
-- Luminosità
+## 👤 Profilo utente
+
+- **Figura**: Enologo / Agronomo / Viticoltore tecnico
+- **Obiettivi principali**:
+- Aumentare la **qualità dell’uva** (zuccheri, acidità, fenoli, antociani…)
+- Ridurre i rischi: malattie, squilibri produttivi, stress ambientali
+- Lavorare in modo **microzonale**, conoscendo le differenze all’interno dello stesso appezzamento
 
 ---
 
-## 🔍 Cosa desidera in più un enologo
+## 📦 Sensori già supportati
 
-### 1. Mappa di Variabilità del Vigneto (Zonazione)
-**Desideri:**
-- Rilevamento delle differenze intra-vigneto
+- Temperatura e umidità dell’aria
+- Umidità del suolo (30 cm)
+- Luminosità (lux)
+
+---
+
+## 🔍 Esigenze avanzate e come soddisfarle
+
+### 1. 🗺️ Mappa della variabilità (Zonazione)
+
+**Obiettivo:** individuare differenze produttive e qualitative all’interno della stessa vigna.
+
+**Funzionalità richiesta:**
 - Dati georeferenziati ad alta precisione
+- Riconoscimento di microzone con comportamento differente
 
-**Suggerimento tecnico:**
-- Integra modulo GPS RTK
-- Supporta importazione mappe georeferenziate
-
----
-
-### 2. Stress Idrico e Bilancio Idrico
-**Desideri:**
-- Rilevamento dello stress idrico utile vs dannoso
-- Bilancio idrico completo: pioggia, evapotraspirazione, irrigazione
-
-**Componenti richiesti:**
-- Sensori di umidità del suolo a 10/30/60 cm
-- Raccolta dati meteo locali: vento, pioggia, radiazione
-- Calcolo ET0 (Penman-Monteith)
+**Soluzioni tecniche:**
+- Integrazione modulo GPS RTK
+- Supporto per importare mappe da droni o GIS
+- Dashboard con visualizzazione differenziale per parcella
 
 ---
 
-### 3. Previsione Rischio Fitopatologico
-**Desideri:**
-- Previsioni personalizzate su peronospora, oidio, botrite
-- Alert intelligenti per trattamenti
+### 2. 💧 Monitoraggio dello stress idrico e bilancio idrico
 
-**Componenti richiesti:**
-- Sensori di foglia bagnata
-- Modelli predittivi: Goidanich, Gubler-Thomas, ecc.
-- Dati combinati: temperatura, umidità, ore bagnatura
+**Obiettivo:** distinguere lo stress idrico utile da quello dannoso, ottimizzando l’irrigazione.
 
----
+**Funzionalità richiesta:**
+- Bilancio idrico completo (pioggia, evaporazione, irrigazione)
+- Allerta per condizioni critiche
 
-### 4. Fenologia della Vite e Supporto Gestionale
-**Desideri:**
-- Previsioni dello stadio fenologico per microzona
-- Alert per potatura verde, sfogliatura, diradamento, vendemmia
-
-**Componenti richiesti:**
-- Algoritmo gradi giorno (Growing Degree Days)
-- Eventuale supporto AI per immagini o app per input manuali
+**Soluzioni tecniche:**
+- Sensori suolo a 10 / 30 / 60 cm
+- Raccolta dati meteo locali (pioggia, radiazione, vento)
+- Algoritmo ET₀ (Penman–Monteith) + pluviometro
 
 ---
 
-### 5. Monitoraggio del Microclima in Chioma/Grappolo
-**Desideri:**
-- Temperatura reale nel grappolo
-- Valutazione del rischio scottature
+### 3. 🦠 Rischio fitopatologico predittivo
 
-**Componenti richiesti:**
+**Obiettivo:** pianificare i trattamenti solo quando servono.
+
+**Funzionalità richiesta:**
+- Previsioni personalizzate per peronospora, oidio, botrite
+- Alert intelligenti legati al meteo e allo stadio fenologico
+
+**Soluzioni tecniche:**
+- Sensore bagnatura fogliare
+- Modelli predittivi validati (Goidanich, Gubler-Thomas)
+- Integrazione con cronologia meteo e calendario
+
+---
+
+### 4. 🌿 Gestione fenologica della vite
+
+**Obiettivo:** ottimizzare interventi mirati (potatura verde, diradamento, vendemmia…).
+
+**Funzionalità richiesta:**
+- Previsione dello stadio fenologico per zona
+- Avvisi in base alla fase della stagione
+
+**Soluzioni tecniche:**
+- Calcolo GDD (gradi giorno)
+- App o dashboard per input manuale osservazioni
+- Supporto visivo da AI (foto da campo)
+
+---
+
+### 5. ☀️ Monitoraggio in chioma e grappolo
+
+**Obiettivo:** valutare rischio di scottature e stress da esposizione solare.
+
+**Funzionalità richiesta:**
+- Temperatura reale all’interno della chioma
+- Dati differenziati tra zone ombreggiate e soleggiate
+
+**Soluzioni tecniche:**
 - Microsonde termiche sotto la chioma
-- Confronto tra zona ombreggiata e soleggiata
+- Comparazione zone con esposizione diversa
 
 ---
 
-### 6. Radiazione Solare (PAR)
-**Desideri:**
-- Dati precisi sulla quantità di luce utile alla fotosintesi
-- Ottimizzare sfogliatura e gestione della chioma
+### 6. 🔆 Radiazione fotosinteticamente attiva (PAR)
 
-**Componenti richiesti:**
-- Sensori PAR (Photosynthetically Active Radiation)
-- Calcolo correlato con inclinazione filari/pendenza
+**Obiettivo:** ottimizzare la gestione della chioma in base alla luce utile alla vite.
+
+**Funzionalità richiesta:**
+- Quantità reale di luce disponibile per la fotosintesi
+- Supporto alle scelte di sfogliatura e potatura
+
+**Soluzioni tecniche:**
+- Sensori PAR
+- Mappa di radiazione in funzione di inclinazione/pendenza
 
 ---
 
-### 7. Integrazione con Immagini Satellitari e Droni
-**Desideri:**
+### 7. 🛰️ Integrazione immagini drone e satellite
+
+**Obiettivo:** confrontare dati da campo con mappe multispettrali.
+
+**Funzionalità richiesta:**
 - Mappe NDVI, NDRE, GNDVI
-- Incrocio tra immagini e dati da campo
+- Confronto storico con dati aziendali passati
 
-**Componenti richiesti:**
-- API per Sentinel, Landsat, droni multispettrali
-- Dashboard con comparazione storica
-
----
-
-### 8. Vendemmia di Precisione
-**Desideri:**
-- Ottimizzazione del momento di raccolta per ogni microzona
-- Dati su maturazione zuccherina, fenolica, acidità
-
-**Componenti richiesti:**
-- Collegamento con analisi in campo (Brix, pH)
-- Eventuale AI per riconoscimento visivo degli acini
+**Soluzioni tecniche:**
+- Integrazione con API Sentinel, Landsat
+- Supporto per immagini da droni multispettrali
+- Dashboard con analisi e sovrapposizione dati
 
 ---
 
-### 9. Dashboard Smart e Alert Intelligenti
-**Desideri:**
-- Mappe facili da leggere e zoomabili
-- Alert su eventi critici via app/email
-- Comparazioni tra annate
+### 8. 🍇 Vendemmia di precisione
 
-**Componenti richiesti:**
-- Interfaccia mobile-friendly
-- Esportazione dati in CSV/Excel
-- Accessi multiutente con permessi differenziati
+**Obiettivo:** scegliere il momento ottimale di raccolta per ogni microzona.
+
+**Funzionalità richiesta:**
+- Indicazioni microzonali su maturazione zuccherina e fenolica
+- Alert vendemmia automatizzati
+
+**Soluzioni tecniche:**
+- Dati da analisi (°Brix, pH, acidità)
+- Supporto AI per immagini acini
+- Integrazione con modelli vendemmia + calendario
 
 ---
 
-## 💡 Bonus per Distinguerti
+### 9. 🧭 Dashboard smart e alert automatici
 
-- **Interoperabilità con trattori e macchine agricole:** mappe prescrittive
-- **AI per previsione vendemmia ottimale:** incrocio tra dati storici e attuali
-- **Tracciabilità e sostenibilità:** moduli per blockchain e QR code di filiera
+**Obiettivo:** avere tutto sotto controllo anche da smartphone.
+
+**Funzionalità richiesta:**
+- Mappe intuitive e zoomabili
+- Alert automatici via email o app
+- Confronto stagioni precedenti
+
+**Soluzioni tecniche:**
+- Interfaccia responsive
+- Esportazione dati (CSV, Excel)
+- Accesso multiutente con livelli (tecnico, agronomo, manager)
+
+---
+
+## 💡 Funzionalità aggiuntive per enologia avanzata
+
+- **Interoperabilità con trattori/macchine agricole** (mappe prescrittive)
+- **AI per previsione vendemmia ottimale**
+- **Modulo tracciabilità (QR code, blockchain)** per cantina e filiera
 
 ---
 
 ## ✅ Conclusione
 
-Un sistema davvero utile per il viticoltore non si limita alla raccolta dati, ma:
-- Interpreta in modo agronomico e fenologico
-- Fornisce modelli predittivi affidabili
-- Offe una UX semplice e potente
+Un sistema utile a un enologo non raccoglie solo dati:
+lo fa in modo intelligente, leggibile, e collegato ai reali obiettivi di qualità. Vitimonitor è pensato per:
 
----
+- Leggere il vigneto in ogni sua parte
+- Collegare ogni dato a un’azione concreta
+- Migliorare, stagione dopo stagione, la qualità dell’uva e la gestione agronomica
+
+> 🍷 La tecnologia non sostituisce l’esperienza, ma la rende ancora più efficace.
 
