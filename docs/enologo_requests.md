@@ -1,11 +1,11 @@
-# Sistema di Agricoltura di Precisione per il Settore Vitivinicolo  
+# Sistema di Agricoltura di Precisione per il Settore Vitivinicolo
 ## Richieste di un Enologo Esperto
 
 ### 👤 Profilo Utente
-**Tipo di utente target:** Enologo/Viticoltore di alta qualità  
-**Obiettivo:**  
-- Massimizzare la qualità dell’uva (zuccheri, acidità, fenoli, antociani, ecc.)  
-- Minimizzare i rischi (fitopatie, stress idrico, squilibri produttivi)  
+**Tipo di utente target:** Enologo/Viticoltore di alta qualità
+**Obiettivo:**
+- Massimizzare la qualità dell’uva (zuccheri, acidità, fenoli, antociani, ecc.)
+- Minimizzare i rischi (fitopatie, stress idrico, squilibri produttivi)
 - Controllo microzonale del vigneto
 
 ---
