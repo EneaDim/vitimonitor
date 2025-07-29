@@ -29,6 +29,13 @@ west-build:
 west-run:
 	west build -t run
 
+west-run-lora:
+	@echo "Avvio west-run e netcat in sessione tmux..."
+	@tmux new-session -d -s lora-run 'make west-run'
+	@tmux split-window -h -t lora-run 'nc -u -l -k 17000'
+	@tmux select-layout -t lora-run tiled
+	@tmux attach -t lora-run
+
 help:
 	@echo "$(ORANGE)"
 	@echo "Makefile targets:"
