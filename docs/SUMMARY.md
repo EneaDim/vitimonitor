@@ -1,7 +1,7 @@
 # 📘 Sommario
 
 ## 🌱 Visione e Obiettivi
-* [📘 Introduzione](README.md)
+* [🍇 Introduzione](index.md)
 * [💡 Idea progettuale](idea.md)
 * [🛣️ Roadmap progettuale](roadmap.md)
 

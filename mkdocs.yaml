@@ -58,6 +58,7 @@ markdown_extensions:
 
 nav:
   - 🍇 Visione e Obiettivi:
+      - 📘 Introduzione: index.md
       - 💡 Idea progettuale: idea.md
       - 🛣️ Roadmap progettuale: roadmap.md
 
