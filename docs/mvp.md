@@ -1,5 +1,8 @@
 # MVP – Versione Minima Funzionante  
-Sistema di Monitoraggio per Viticoltura di Precisione
+
+---
+
+> 🧠 Sistema di Monitoraggio per Viticoltura di Precisione
 
 ---
 
