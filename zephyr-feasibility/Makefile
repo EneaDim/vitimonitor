@@ -36,6 +36,9 @@ west-run-lora:
 	@tmux select-layout -t lora-run tiled
 	@tmux attach -t lora-run
 
+check-size:
+	size build/zephyr/zephyr.elf
+
 help:
 	@echo "$(ORANGE)"
 	@echo "Makefile targets:"
@@ -47,6 +50,7 @@ help:
 	@echo "run         Run using CMake"
 	@echo "west-build  Build using west (recommended)"
 	@echo "west-run    Run using west (if supported)"
+	@echo "check-size  Check the size of the binary"
 	@echo "clean       Remove build directory"
 	@echo "help        Show this help message"
 	@echo "$(RESET)"
