@@ -416,7 +416,7 @@ static const struct sensor_driver_api {module_name}_driver_api = {{
 // I2C Emulator API
 
 static int {module_name}_transfer(const struct emul *target,
-                                  struct i2c_msg *msgs, int num_msgs, int addr)
+                                  struct {interface}_msg *msgs, int num_msgs, int addr)
 {{
     const struct {module_name}_cfg *cfg = target->cfg;
     struct {module_name}_data *data = target->data;
@@ -465,7 +465,7 @@ static int {module_name}_transfer(const struct emul *target,
     return -EIO;
 }}
 
-static struct i2c_emul_api {module_name}_api = {{
+static struct {interface}_emul_api {module_name}_api = {{
     .transfer = {module_name}_transfer,
 }};
 
