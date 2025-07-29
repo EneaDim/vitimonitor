@@ -58,22 +58,101 @@ project(
 # Add main source file
 target_sources(app PRIVATE src/main.c)
 
-# Optional: Add include directories
-# target_include_directories(app PRIVATE include)
-
-# Optional: Add additional sources
-# target_sources(app PRIVATE src/utils.c src/device.c)
-
-# Optional: Add libraries
-# target_link_libraries(app PRIVATE my_custom_lib)
-
-# Optional: Define compile definitions
-# target_compile_definitions(app PRIVATE MY_MACRO=1)
-
-# Optional: Compiler options
-# target_compile_options(app PRIVATE -Wall -Werror)
 """
     write_file(os.path.join(output_folder, "CMakeLists.txt"), cmake_content, overwrite)
+    # prj.conf
+    prj_conf_content = f"""# Emul
+CONFIG_EMUL=y
+
+# I2C
+CONFIG_I2C=y
+CONFIG_I2C_EMUL=y
+
+# Sensor drivers
+CONFIG_SENSOR=y
+#CONFIG_BH1750=y
+#CONFIG_SHT3XD=y
+
+#GPIO
+CONFIG_GPIO=y
+CONFIG_GPIO_EMUL=y
+
+# Random
+#CONFIG_STACK_POINTER_RANDOM=0
+#CONFIG_TEST_RANDOM_GENERATOR=y
+#CONFIG_TIMER_RANDOM_GENERATOR=y
+#CONFIG_TEST_CSPRNG_GENERATOR=y
+
+# General logging
+CONFIG_LOG=y
+#CONFIG_LOG_DEFAULT_LEVEL=4
+
+# Print Float
+#CONFIG_CBPRINTF_FP_SUPPORT=y
+"""
+    write_file(os.path.join(output_folder, "prj.conf"), prj_conf_content, overwrite)
+
+
+    # Overlay files
+    boards_dir = os.path.join(output_folder, "boards")
+    os.makedirs(boards_dir, exist_ok=True)
+
+    native_sim_overlay_content = """&i2c0 {
+    status = "okay";
+    clock-frequency = <I2C_BITRATE_STANDARD>; /* 100kHz */
+};
+
+&gpio0 {
+    status = "okay";
+};
+
+&led0 {
+    status = "okay";
+};
+"""
+    write_file(os.path.join(output_folder, "boards/native_sim.overlay"), native_sim_overlay_content, overwrite)
+
+    esp32s3_devkitc_content = """&i2c0 {
+    status = "okay";
+    clock-frequency = <I2C_BITRATE_STANDARD>; /* 100kHz */
+};
+
+/ {
+	  aliases {
+        led0 = &led0;
+	  };
+
+
+    leds {
+        compatible = "gpio-leds";
+        led0: led_0 {
+            gpios = <&fakegpio 0 GPIO_ACTIVE_HIGH>;
+            label = "FAKE_LED_0";
+        };
+    };
+
+    fakegpio: gpio@0 {
+        compatible = "zephyr,gpio-emul";
+        gpio-controller;
+        #gpio-cells = <2>;
+        reg = <0 0x1000>;  /* Corrected reg property format */
+        #address-cells = <1>;
+        #size-cells = <1>;
+        ngpios = <32>;
+        status = "okay";
+    };
+};
+"""
+    write_file(os.path.join(output_folder, "boards/esp32s3_devkitc.overlay"), esp32s3_devkitc_content, overwrite)
+
+    util_dir = os.path.join(output_folder, "utils")
+    os.makedirs(util_dir, exist_ok=True)
+    qemu_content = """\
+dd if=/dev/zero of=build/zephyr/zephyr_4mb.bin bs=1M count=4
+dd if=build/zephyr/zephyr.bin of=build/zephyr/zephyr_4mb.bin conv=notrunc
+qemu-system-xtensa -nographic -machine esp32s3 -drive file=build/zephyr/zephyr_4mb.bin,if=mtd,format=raw
+"""
+    write_file(os.path.join(output_folder, "utils/qemu_esp32.sh"), qemu_content, overwrite)
 
     # Makefile
     makefile_content = f"""BOARD   ?= {board}
@@ -122,33 +201,82 @@ help:
 """
     write_file(os.path.join(output_folder, "Makefile"), makefile_content, overwrite)
 
-    # prj.conf
-    write_file(os.path.join(output_folder, "prj.conf"), "# Project configuration goes here\n", overwrite)
-
-    # One overlay file
-    boards_dir = os.path.join(output_folder, "boards")
-    os.makedirs(boards_dir, exist_ok=True)
-    overlay_path = os.path.join(boards_dir, f"{overlay}.overlay")
-    write_file(overlay_path, f"// Device tree overlay: {overlay}.overlay\n", overwrite)
-
     # main.c
     src_dir = os.path.join(output_folder, "src")
     os.makedirs(src_dir, exist_ok=True)
-    main_c_content = """#include <zephyr/kernel.h>
+    main_c_content = """\
+// -----------------------------------------------------------------------------
+// Kernel and driver includes
 
-// #include <zephyr/drivers/gpio.h>
-// #include "my_header.h"
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/logging/log.h>
 
-void main(void) {
-    // Initialization here
-    // Example:
-    // printk("Hello, Zephyr!\\n");
+LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
-    // while (1) {
-    //     k_sleep(K_SECONDS(1));
-    // }
+// -----------------------------------------------------------------------------
+// Constants and thread configuration
+
+#define STACK_SIZE 1024
+#define LED_PRIORITY 5
+#define LED_BLINK_INTERVAL_MS 500
+
+// -----------------------------------------------------------------------------
+// LED GPIO configuration
+
+#define LED0_NODE DT_NODELABEL(led0)
+static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+
+// -----------------------------------------------------------------------------
+// Thread stack and control block
+
+K_THREAD_STACK_DEFINE(led_stack, STACK_SIZE);
+static struct k_thread led_thread_data;
+
+// -----------------------------------------------------------------------------
+// LED Thread
+
+void led_thread(void *arg1, void *arg2, void *arg3)
+{
+    bool state = false;
+
+    while (1) {
+        state = !state;
+        gpio_pin_set_dt(&led, state);
+        LOG_INF("LED: %s", state ? "ON" : "OFF");
+        k_msleep(LED_BLINK_INTERVAL_MS);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Main Function
+
+int main(void)
+{
+    LOG_INF("Booting LED Blink Application...");
+
+    if (!device_is_ready(led.port)) {
+        LOG_ERR("LED device not ready");
+        return 0;
+    }
+
+    if (gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE) < 0) {
+        LOG_ERR("Failed to configure LED GPIO");
+        return 0;
+    }
+
+    LOG_INF("LED ready. Launching thread...");
+
+    k_thread_create(&led_thread_data, led_stack, STACK_SIZE,
+                    led_thread, NULL, NULL, NULL,
+                    LED_PRIORITY, 0, K_NO_WAIT);
+
+    return 0;
 }
 """
+
     write_file(os.path.join(src_dir, "main.c"), main_c_content, overwrite)
 
 def main():

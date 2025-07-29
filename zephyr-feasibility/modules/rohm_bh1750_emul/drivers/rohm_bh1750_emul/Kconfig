@@ -1,0 +1,6 @@
+config ROHM_BH1750_EMUL
+        bool "Emulate rohm_bh1750_emul with i2c interface"
+  default n
+        depends on EMUL
+        help
+          This is an emulator for the BH1750 light sensor.

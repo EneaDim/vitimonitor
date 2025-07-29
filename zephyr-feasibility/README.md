@@ -1,80 +1,90 @@
-# 💡 Zephyr Feasibility Project
+# 🌿 Progetto IoT Agricolo con LoRa e Zephyr RTOS
 
-## 📘 Descrizione
+## 📝 Descrizione
 
-Questo progetto ha lo scopo di verificare la **fattibilità di una simulazione ad alto livello** utilizzando **Zephyr RTOS**. L’intero comportamento del sistema — inclusi la simulazione del sensore e il controllo di un LED — è implementato nel codice applicativo (`main.c`), senza definire driver personalizzati.
+Questo progetto dimostrativo raccoglie **dati ambientali simulati** (temperatura e umidità) tramite un **sensore SHT3x-D emulato** e li elabora utilizzando **Zephyr RTOS**. È pensato per testare l’integrazione software in ambienti embedded, con un occhio allo sviluppo modulare e alla portabilità tra **simulazione su PC** e **dispositivi reali** come **RAK3172** (STM32WLE5) o **ESP32-S3**.
 
-È un esempio minimalista ed educativo utile per:
-- Valutare il funzionamento di Zephyr su diverse piattaforme.
-- Simulare il comportamento di periferiche in modo controllato.
-- Analizzare la portabilità tra ambienti `native_sim` e `esp32s3`.
+Il sistema è progettato per essere compatibile con **architetture multi-threaded**, con **blinking LED** e **log seriali** che mostrano i dati in tempo reale.
 
 ---
 
-## 📂 Struttura del Progetto
-zephyr-feasibility/
-├── CMakeLists.txt # Configurazione CMake per la build
-├── Makefile # Comandi abbreviati per build e flash
-├── README.md # Descrizione del progetto (questo file)
-├── boards/ # Overlay Devicetree per le board supportate
-│   ├── esp32s3_devkitc.overlay
-│   └── native_sim.overlay
-├── prj.conf # Configurazione Zephyr RTOS (log, thread, ecc.)
-├── src/
-    └── main.c # Applicazione principale con logica emulata
+## 🧪 Sensore Emulato
+
+- **SHT3x-D (Sensirion)**: emulazione completa della comunicazione I²C, supporta i comandi standard come misura, soft reset e lettura dello stato.
+- Dati simulati: temperatura e umidità variabili.
+- Supporto alla CRC secondo specifica Sensirion.
+- Integrabile nel sistema tramite Devicetree.
+
+---
+
+## ⚙️ Funzionalità
+
+- Acquisizione periodica dei dati da sensore emulato.
+- Log dei dati su seriale in formato leggibile (Celsius e % RH).
+- Blinking di un LED virtuale per simulare attività visibile.
+- Architettura a thread separati: uno per il LED, uno per il sensore.
+- Compatibilità completa con Zephyr `native_sim` per sviluppo e test su PC.
+
+---
+
+## 📦 Compatibilità Hardware
+
+| Piattaforma | Stato | Note |
+|-------------|-------|------|
+| `native_sim` | ✅ Funziona | Test e sviluppo su PC |
+| `ESP32-S3` | 🧪 In fase di porting | Necessario impostare `ESP_IDF_PATH` |
+
+---
+
+## 🔧 Personalizzazione
+
+- **Intervallo di Lettura Sensore**
+Il tempo tra le misure è configurabile nel codice sorgente tramite una variabile definita (`sensor_read_interval`).
+
+- **Emulazione LED**
+Il LED è configurato come `gpio-emul` e lampeggia per segnalare che il sistema è attivo. Compatibile con `led0` via alias Devicetree.
+
+- **Valori Simulati**
+I valori di temperatura e umidità possono essere generati casualmente o impostati manualmente con la funzione `sht3xd_emul_api_set()`.
+
+---
+
+## 🗂 Struttura del Progetto
+zephyr-feasibility-emul/
+├── src/ # Codice principale (main.c)
+├── modules/sensirion_sht3xd_emul/ # Emulatore custom SHT3x
+├── boards/ # Overlay Devicetree (esp32s3, native_sim)
+├── prj.conf # Opzioni di configurazione Zephyr
+├── CMakeLists.txt # File di build principale
+└── README.md # Descrizione del progetto
 
 
 ---
 
-## ⚙️ Caratteristiche Principali
+## 🧪 Output Atteso
 
-- **Simulazione LED**
-- Il LED è gestito via Devicetree (`led0`) e controllato ciclicamente da un thread.
-- Per `native_sim`, viene usato un controller GPIO emulato.
+Durante l’esecuzione su `native_sim`, il sistema produce un log simile al seguente:
+[00:00:01.010,000] <inf> main: Emulated Temperature: 24.16 C, Humidity: 53.45 %
+[00:00:01.020,000] <inf> main: Emulated LED Blink: On
 
-- **Simulazione sensore ambientale**
-- La lettura di temperatura e umidità è simulata all’interno del codice.
-- I valori variano in modo pseudo-casuale per test di logging e visualizzazione.
-
-- **Logging**
-- I valori simulati vengono stampati a intervalli regolari tramite il sistema di log di Zephyr.
-- Supporta stampa in virgola mobile (se abilitata da `CONFIG_CBPRINTF_FP_SUPPORT`).
-
-- **Thread separati**
-- Due thread distinti: uno per il LED e uno per la generazione e stampa dei dati ambientali.
-
-- **Compatibilità multipiattaforma**
-- Testato su `native_sim` per sviluppo e debug rapido.
-- Supporto preliminare per `esp32s3_devkitc` (con setup documentato in `docs/`).
-
----
-
-## 📑 Documentazione
-
-- `docs/setup_zephyr.md`: guida all'installazione di Zephyr SDK e toolchain.
-- `docs/esp32_setup.md`: guida alla configurazione e compilazione per ESP32-S3.
-
----
-
-## 🎯 Obiettivi del progetto
-
-✅ Verificare la capacità di Zephyr di gestire emulazione ad alto livello
-✅ Eseguire logging multithread e controllo di periferiche simulate
-✅ Testare overlay Devicetree semplificati per `native_sim` ed ESP32
-✅ Fornire un template base per progetti futuri più complessi
 
 ---
 
 ## ⚖️ Licenza
 
 Distribuito sotto licenza **MIT**.
-Consulta il file `LICENSE` (non incluso in questa versione) per i dettagli.
+Consulta il file `LICENSE` per i dettagli.
 
 ---
 
-## ✍️ Autore
+## 🤝 Contributi
 
-Prototipo sviluppato da [Enea Dimatteo](https://github.com/eneadim)
-per l’infrastruttura **AgriTrust** (sperimentazione sensori e IoT agricolo).
+Il progetto è in continua evoluzione.
+È possibile contribuire con:
+- Altri emulatori I²C/SPI/ADC
+- Backend per trasmissione LoRaWAN o MQTT
+- Interfacce per configurazione remota o logging avanzato
+
+Apri una issue o una pull request per collaborare!
 
 

@@ -1,7 +1,7 @@
-BOARD   ?= esp32s3_devkitc/esp32s3/procpu
-OVERLAY ?= esp32s3_devkitc
-#BOARD   ?= native_sim
-#OVERLAY ?= native_sim
+#BOARD   ?= esp32s3_devkitc/esp32s3/procpu
+#OVERLAY ?= esp32s3_devkitc
+BOARD   ?= native_sim
+OVERLAY ?= native_sim
 
 ORANGE  :=\033[38;5;214m
 RESET   :=\033[0m

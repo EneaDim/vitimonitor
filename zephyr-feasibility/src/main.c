@@ -1,140 +1,186 @@
+// -----------------------------------------------------------------------------
+// Kernel and driver includes
+
 #include <zephyr/kernel.h>
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/i2c.h>
+#include <zephyr/drivers/sensor.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/random/random.h>
 
+#ifdef CONFIG_EMUL
+#include "sensirion_sht3xd_emul.h"
+#include "rohm_bh1750_emul.h"
+#endif
+
 LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
+// -----------------------------------------------------------------------------
+// Constants and thread configuration
+
 #define STACK_SIZE 1024
-#define LED_PRIORITY 5
-#define TEMP_PRIORITY 5
-#define LUX_PRIORITY 5
 
-#define LED_BLINK_INTERVAL_MS 500
-#define TEMP_INTERVAL_MS      1000
-#define LUX_INTERVAL_MS       500
+#define LED_PRIORITY    5
+#define TEMP_PRIORITY   5
+#define LIGHT_PRIORITY  5
 
-static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_NODELABEL(led0), gpios);
+#define LED_BLINK_INTERVAL_MS   500
+#define TEMP_INTERVAL_MS       1000
+#define LIGHT_INTERVAL_MS      1000
+
+// -----------------------------------------------------------------------------
+// LED GPIO configuration
+
+#define LED0_NODE DT_NODELABEL(led0)
+static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+
+// -----------------------------------------------------------------------------
+// SHT3XD (temperature/humidity) sensor configuration
+
+#define SHT3XD_NODE DT_NODELABEL(sht3xd)
+static const struct device *sht3xd_dev = DEVICE_DT_GET(SHT3XD_NODE);
+
+#ifdef CONFIG_EMUL
+static const struct emul *sht3xd_emul = EMUL_DT_GET(SHT3XD_NODE);
+#endif
+
+// -----------------------------------------------------------------------------
+// BH1750 (light intensity) sensor configuration
+
+#define BH1750_NODE DT_NODELABEL(bh1750)
+static const struct device *bh1750_dev = DEVICE_DT_GET(BH1750_NODE);
+static const struct i2c_dt_spec bh1750_spec = I2C_DT_SPEC_GET(BH1750_NODE);
+
+#ifdef CONFIG_EMUL
+static const struct emul *bh1750_emul = EMUL_DT_GET(BH1750_NODE);
+#endif
+
+// -----------------------------------------------------------------------------
+// Thread stacks and control blocks
 
 K_THREAD_STACK_DEFINE(led_stack, STACK_SIZE);
 K_THREAD_STACK_DEFINE(temp_stack, STACK_SIZE);
-K_THREAD_STACK_DEFINE(lux_stack, STACK_SIZE);
+K_THREAD_STACK_DEFINE(light_stack, STACK_SIZE);
 
 static struct k_thread led_thread_data;
 static struct k_thread temp_thread_data;
-static struct k_thread lux_thread_data;
+static struct k_thread light_thread_data;
 
-/* Emulated I2C read function */
-int emulated_i2c_read(uint8_t device_addr, uint8_t reg_addr, uint8_t *data, size_t len)
-{
-    switch (device_addr) {
-    case 0x44:  /* Temperature & Humidity sensor */
-        if (reg_addr == 0x00) {  // Temperature register
-            uint16_t temp = sys_rand32_get() % 4000;
-            data[0] = (temp >> 8) & 0xFF;
-            data[1] = temp & 0xFF;
-        } else if (reg_addr == 0x01) {  // Humidity register
-            uint16_t hum = sys_rand32_get() % 10000;
-            data[0] = (hum >> 8) & 0xFF;
-            data[1] = hum & 0xFF;
-        }
-        break;
-
-    case 0x23:  /* Lux sensor */
-        if (reg_addr == 0x10) {
-            uint32_t lux = sys_rand32_get() % 100000;
-            data[0] = (lux >> 16) & 0xFF;
-            data[1] = (lux >> 8) & 0xFF;
-            data[2] = lux & 0xFF;
-        }
-        break;
-
-    default:
-        LOG_WRN("Unknown I2C device address 0x%02X", device_addr);
-        return -EINVAL;
-    }
-
-    LOG_DBG("Emulated I2C read from 0x%02X reg 0x%02X len %zu", device_addr, reg_addr, len);
-    return 0;
-}
+// -----------------------------------------------------------------------------
+// LED Thread: toggles the LED periodically
 
 void led_thread(void *arg1, void *arg2, void *arg3)
 {
-    int ret;
-    bool led_is_on = false;
+    bool state = false;
 
     while (1) {
-        led_is_on = !led_is_on;
-        ret = gpio_pin_set_dt(&led, led_is_on);
-        if (ret < 0) {
-            LOG_ERR("Failed to set LED: %d", ret);
-        }
-        LOG_INF("Emulated Led Blink: %s", led_is_on ? "True" : "False");
+        state = !state;
+        gpio_pin_set_dt(&led, state);
+        LOG_INF("LED: %s", state ? "ON" : "OFF");
         k_msleep(LED_BLINK_INTERVAL_MS);
     }
 }
 
+// -----------------------------------------------------------------------------
+// Temperature Thread: reads SHT3XD via sensor API and logs values
+
 void temp_thread(void *arg1, void *arg2, void *arg3)
 {
-    uint8_t buf[2];
-    uint16_t temp_val, hum_val;
-    int temp_int, temp_frac, hum_int, hum_frac;
+    struct sensor_value temp, hum;
 
     while (1) {
-        if (emulated_i2c_read(0x44, 0x00, buf, 2) == 0) {
-            temp_val = ((uint16_t)buf[0] << 8) | buf[1];
+        if (sensor_sample_fetch(sht3xd_dev) == 0 &&
+            sensor_channel_get(sht3xd_dev, SENSOR_CHAN_AMBIENT_TEMP, &temp) == 0 &&
+            sensor_channel_get(sht3xd_dev, SENSOR_CHAN_HUMIDITY, &hum) == 0) {
+
+            float tf = sensor_value_to_double(&temp);
+            float hf = sensor_value_to_double(&hum);
+            LOG_INF("Temp: %.2f °C, Humidity: %.2f %%", tf, hf);
+        } else {
+            LOG_WRN("Failed to fetch SHT3XD sample");
         }
-
-        if (emulated_i2c_read(0x44, 0x01, buf, 2) == 0) {
-            hum_val = ((uint16_t)buf[0] << 8) | buf[1];
-        }
-
-        temp_int = temp_val / 100;
-        temp_frac = (temp_val % 100) * 10000;
-        hum_int  = hum_val / 100;
-        hum_frac = (hum_val % 100) * 10000;
-
-        LOG_INF("Emulated Temperature: %d.%06d C, Humidity: %d.%06d %%",
-                temp_int, temp_frac, hum_int, hum_frac);
 
         k_msleep(TEMP_INTERVAL_MS);
     }
 }
 
-void lux_thread(void *arg1, void *arg2, void *arg3)
+// -----------------------------------------------------------------------------
+// Light Thread: reads BH1750 via sensor API and logs values
+// -----------------------------------------------------------------------------
+
+void light_thread(void *arg1, void *arg2, void *arg3)
 {
-    uint8_t buf[3];
-    uint32_t lux_val;
+    struct sensor_value lux;
+    uint8_t power_on_cmd = 0x01;
+    int ret;
+
+    // Power ON → usa il bus I2C reale
+    ret = i2c_write(bh1750_spec.bus, &power_on_cmd, 1, DT_REG_ADDR(BH1750_NODE));
+    if (ret < 0) {
+        LOG_ERR("Failed to power on BH1750: %d", ret);
+        return;
+    }
 
     while (1) {
-        if (emulated_i2c_read(0x23, 0x10, buf, 3) == 0) {
-            lux_val = ((uint32_t)buf[0] << 16) |
-                      ((uint32_t)buf[1] << 8) |
-                       (uint32_t)buf[2];
+        if (sensor_sample_fetch(bh1750_dev) == 0 &&
+            sensor_channel_get(bh1750_dev, SENSOR_CHAN_LIGHT, &lux) == 0) {
+
+            float lf = sensor_value_to_double(&lux);
+            LOG_INF("Light Intensity: %.2f lux", lf);
+        } else {
+            LOG_WRN("Failed to fetch BH1750 sample");
         }
 
-        LOG_INF("Emulated Luminosity: %u lx", lux_val);
-
-        k_msleep(LUX_INTERVAL_MS);
+        k_msleep(LIGHT_INTERVAL_MS);
     }
 }
 
+// -----------------------------------------------------------------------------
+// Main: initialize devices and launch threads
+
 int main(void)
 {
-    LOG_INF("Zephyr ESP32-S3 sensor + LED example starting…");
+    LOG_INF("Booting Sensor Application...");
 
+    // Check device readiness
     if (!device_is_ready(led.port)) {
-        LOG_ERR("LED GPIO device not ready");
+        LOG_ERR("LED device not ready");
         return 0;
     }
 
+    if (!device_is_ready(sht3xd_dev)) {
+        LOG_ERR("SHT3XD sensor not ready");
+        return 0;
+    }
+
+    if (!device_is_ready(bh1750_dev)) {
+        LOG_ERR("BH1750 sensor not ready");
+        return 0;
+    }
+
+#ifdef CONFIG_EMUL
+    if (!device_is_ready(sht3xd_emul->dev)) {
+        LOG_ERR("SHT3XD emulator not ready");
+        return 0;
+    }
+
+    if (!device_is_ready(bh1750_emul->dev)) {
+        LOG_ERR("BH1750 emulator not ready");
+        return 0;
+    }
+#endif
+
+    // Configure LED pin
     if (gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE) < 0) {
-        LOG_ERR("Failed to configure LED pin");
+        LOG_ERR("Failed to configure LED GPIO");
         return 0;
     }
 
-    LOG_INF("All devices initialized successfully, starting threads…");
+    LOG_INF("Devices ready. Launching threads...");
 
+    // Start threads
     k_thread_create(&led_thread_data, led_stack, STACK_SIZE,
                     led_thread, NULL, NULL, NULL,
                     LED_PRIORITY, 0, K_NO_WAIT);
@@ -143,9 +189,9 @@ int main(void)
                     temp_thread, NULL, NULL, NULL,
                     TEMP_PRIORITY, 0, K_NO_WAIT);
 
-    k_thread_create(&lux_thread_data, lux_stack, STACK_SIZE,
-                    lux_thread, NULL, NULL, NULL,
-                    LUX_PRIORITY, 0, K_NO_WAIT);
+    k_thread_create(&light_thread_data, light_stack, STACK_SIZE,
+                    light_thread, NULL, NULL, NULL,
+                    LIGHT_PRIORITY, 0, K_NO_WAIT);
 
     return 0;
 }
