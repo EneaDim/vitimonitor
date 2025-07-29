@@ -1,0 +1,6 @@
+name: sx1262_emul
+build:
+  cmake: .
+  kconfig: Kconfig
+  settings:
+    dts_root: .

@@ -1,0 +1,5 @@
+description: Emulator for sx1262_emul
+
+compatible: "sx1262,emul.yaml"
+
+include: [sensor-device.yaml, spi-device.yaml]

@@ -1,0 +1,55 @@
+# Copyright (c) 2024, Enea Scaccabarozzi
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Semtech SX1262 LoRa Transceiver Emulator.
+  This binding is self-contained and explicitly defines all required
+  SPI properties to avoid issues with the 'include' directive.
+
+compatible: "semtech,sx1262-emul"
+
+on-bus: spi
+
+properties:
+  # Proprietà SPI Standard
+  reg:
+    type: int
+    required: true
+    description: The chip select address of the SPI device.
+  spi-max-frequency:
+    type: int
+    required: false
+    description: Maximum SPI clock frequency for the device in Hz.
+  duplex:
+    type: int
+    required: false
+    description: |
+      The SPI duplex mode.
+      0 for half-duplex, 1 for full-duplex.
+  frame-format:
+    type: int
+    required: false
+    description: The SPI frame format.
+  cs-active-high:
+    type: boolean
+    description: CS line is active high.
+  spi-cpha:
+    type: boolean
+    description: Clock phase.
+  spi-cpol:
+    type: boolean
+    description: Clock polarity.
+
+  # Proprietà specifiche del nostro emulatore
+  reset-gpios:
+    type: phandle-array
+    required: true
+    description: Reset pin
+  busy-gpios:
+    type: phandle-array
+    required: true
+    description: Busy pin
+  dio1-gpios:
+    type: phandle-array
+    required: true
+    description: DIO1 pin (interrupt)

@@ -1,0 +1,7 @@
+/ {
+    lora_emul: sx1262-emul@0 {
+        compatible = "semtech,sx1262-emul";
+        label = "SX1262_EMUL";
+        status = "okay";
+    };
+};

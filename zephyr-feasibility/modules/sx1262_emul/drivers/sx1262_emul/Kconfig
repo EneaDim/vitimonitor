@@ -1,0 +1,6 @@
+config SX1262_EMUL
+        bool "Emulate sx1262_emul with spi interface"
+  default n
+        depends on EMUL
+        help
+          This is an emulator for the sx1262_emul sensor.
