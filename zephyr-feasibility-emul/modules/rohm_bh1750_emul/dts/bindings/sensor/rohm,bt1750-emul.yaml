@@ -1,5 +1,0 @@
-description: Emulator for rohm_bh1750_emul
-
-compatible: "rohm,bh1750-emul.yaml"
-
-include: [sensor-device.yaml, i2c-device.yaml]

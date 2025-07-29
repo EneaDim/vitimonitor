@@ -1,1 +1,0 @@
-add_subdirectory_ifdef(CONFIG_SENSIRION_SHT3XD_EMUL sensirion_sht3xd_emul)

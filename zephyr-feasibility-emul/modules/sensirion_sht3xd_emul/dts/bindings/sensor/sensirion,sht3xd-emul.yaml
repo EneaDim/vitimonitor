@@ -1,6 +1,0 @@
-description: Emulator for Sensirion SHT3XD sensor
-
-compatible: "sensirion,sht3xd-emul"
-
-include: [sensor-device.yaml, i2c-device.yaml]
-

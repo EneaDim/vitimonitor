@@ -1,7 +1,0 @@
-config SENSIRION_SHT3XD_EMUL
-	bool "Emulate Sensirion SHT3XD I2C chip"
-  default n
-	depends on EMUL
-	help
-	  This is an emulator for the Sensirion SHT3XD temperature and humidity sensor.
-
