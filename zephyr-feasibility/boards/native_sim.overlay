@@ -18,6 +18,16 @@
 
 };
 
+&spi0 {
+    status = "okay";
+    sx1262: sx1262@0 {
+        compatible = "sx1262-emul";
+        reg = <0x0>;
+        status = "okay";
+        label = "SX1262";
+    };
+};
+
 &gpio0 {
     status = "okay";
 };

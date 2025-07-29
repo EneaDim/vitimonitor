@@ -9,10 +9,12 @@
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/random/random.h>
+#include <zephyr/drivers/lora.h>
 
 #ifdef CONFIG_EMUL
 #include "sensirion_sht3xd_emul.h"
 #include "rohm_bh1750_emul.h"
+#include "sx1262_emul.h"
 #endif
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
@@ -25,10 +27,12 @@ LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 #define LED_PRIORITY    5
 #define TEMP_PRIORITY   5
 #define LIGHT_PRIORITY  5
+#define LORA_PRIORITY     5
 
 #define LED_BLINK_INTERVAL_MS   500
 #define TEMP_INTERVAL_MS       1000
 #define LIGHT_INTERVAL_MS      1000
+#define LORA_INTERVAL_MS  5000
 
 // -----------------------------------------------------------------------------
 // LED GPIO configuration
@@ -58,15 +62,26 @@ static const struct emul *bh1750_emul = EMUL_DT_GET(BH1750_NODE);
 #endif
 
 // -----------------------------------------------------------------------------
+// LoRa driver
+#define SX1262_NODE DT_NODELABEL(sx1262)
+static const struct device *sx1262_dev = DEVICE_DT_GET(SX1262_NODE);
+
+#ifdef CONFIG_EMUL
+static const struct emul *sx1262_emul = EMUL_DT_GET(SX1262_NODE);
+#endif
+
+// -----------------------------------------------------------------------------
 // Thread stacks and control blocks
 
 K_THREAD_STACK_DEFINE(led_stack, STACK_SIZE);
 K_THREAD_STACK_DEFINE(temp_stack, STACK_SIZE);
 K_THREAD_STACK_DEFINE(light_stack, STACK_SIZE);
+K_THREAD_STACK_DEFINE(lora_stack, STACK_SIZE);
 
 static struct k_thread led_thread_data;
 static struct k_thread temp_thread_data;
 static struct k_thread light_thread_data;
+static struct k_thread lora_thread_data;
 
 // -----------------------------------------------------------------------------
 // LED Thread: toggles the LED periodically
@@ -137,6 +152,39 @@ void light_thread(void *arg1, void *arg2, void *arg3)
     }
 }
 
+void lora_thread(void *arg1, void *arg2, void *arg3)
+{
+    struct sensor_value temp, hum, lux;
+    char payload[64];
+
+    while (1) {
+        bool ok = sensor_sample_fetch(sht3xd_dev) == 0 &&
+                  sensor_channel_get(sht3xd_dev, SENSOR_CHAN_AMBIENT_TEMP, &temp) == 0 &&
+                  sensor_channel_get(sht3xd_dev, SENSOR_CHAN_HUMIDITY, &hum) == 0 &&
+                  sensor_sample_fetch(bh1750_dev) == 0 &&
+                  sensor_channel_get(bh1750_dev, SENSOR_CHAN_LIGHT, &lux) == 0;
+
+        if (ok) {
+            float tf = sensor_value_to_double(&temp);
+            float hf = sensor_value_to_double(&hum);
+            float lf = sensor_value_to_double(&lux);
+
+            snprintf(payload, sizeof(payload), "T:%.1f H:%.1f L:%.1f", tf, hf, lf);
+
+            int ret = sx1262_send(sx1262_dev, (uint8_t *)payload, strlen(payload));
+            if (ret == 0) {
+                LOG_INF("LoRa TX: %s", payload);
+            } else {
+                LOG_ERR("LoRa send failed: %d", ret);
+            }
+        } else {
+            LOG_WRN("Sensor read failed");
+        }
+
+        k_msleep(5000);  // invia ogni 5 secondi
+    }
+}
+
 // -----------------------------------------------------------------------------
 // Main: initialize devices and launch threads
 
@@ -160,6 +208,11 @@ int main(void)
         return 0;
     }
 
+    if (!device_is_ready(sx1262_dev)) {
+        LOG_ERR("SX1262 not ready");
+        return 0;
+    }
+
 #ifdef CONFIG_EMUL
     if (!device_is_ready(sht3xd_emul->dev)) {
         LOG_ERR("SHT3XD emulator not ready");
@@ -168,6 +221,10 @@ int main(void)
 
     if (!device_is_ready(bh1750_emul->dev)) {
         LOG_ERR("BH1750 emulator not ready");
+        return 0;
+    }
+    if (!device_is_ready(sx1262_emul->dev)) {
+        LOG_ERR("SX1262 emulator not ready");
         return 0;
     }
 #endif
@@ -192,6 +249,10 @@ int main(void)
     k_thread_create(&light_thread_data, light_stack, STACK_SIZE,
                     light_thread, NULL, NULL, NULL,
                     LIGHT_PRIORITY, 0, K_NO_WAIT);
+    k_thread_create(&lora_thread_data, lora_stack, STACK_SIZE,
+                    lora_thread, NULL, NULL, NULL,
+                    LORA_PRIORITY, 0, K_NO_WAIT);
+    
 
     return 0;
 }
