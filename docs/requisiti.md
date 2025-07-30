@@ -8,8 +8,7 @@ Contiene tutte le informazioni necessarie per l’implementazione hardware, firm
 
 ## 🔁 1. Architettura Generale del Sistema
 
-  [ NODI SENSORI ] ---> [ LoRaWAN ] ---> [ GATEWAY ] ---> [ BACKEND ] ---> [ DASHBOARD / APP ]
-       ESP32                SX1276         RAK/Custom        API + DB         React / Flutter
+<img src="../images/flusso_dati.png" width="90%" alt="Flusso dati" style="display: block; margin: auto;">
 
 - Sistema distribuito di nodi IoT ambientali a basso consumo
 - Comunicazione LPWAN con topologia a stella
