@@ -251,6 +251,7 @@ int main(void)
     k_thread_create(&light_thread_data, light_stack, STACK_SIZE,
                     light_thread, NULL, NULL, NULL,
                     LIGHT_PRIORITY, 0, K_NO_WAIT);
+
     k_thread_create(&lora_thread_data, lora_stack, STACK_SIZE,
                     lora_thread, NULL, NULL, NULL,
                     LORA_PRIORITY, 0, K_NO_WAIT);
