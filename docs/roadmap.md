@@ -7,7 +7,7 @@
 **Vitimonitor** cresce in modo graduale, partendo dalle esigenze più immediate per arrivare, nel tempo, a offrire strumenti sempre più precisi.
 Ogni fase nasce da un confronto diretto con chi lavora in vigna, con l’obiettivo di migliorare la gestione agronomica senza complicazioni.
 
-<img src="../images/roadmap.png" width="100%" alt="Roadmap progetto" style="display: block; margin: auto;">
+<img src="../images/roadmap2.png" width="100%" alt="Roadmap progetto" style="display: block; margin: auto;">
 
 ---
 
