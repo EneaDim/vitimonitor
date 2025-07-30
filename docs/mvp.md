@@ -7,7 +7,7 @@
 ## 🎯 Obiettivo
 Testare sul campo una versione semplificata ma utile del sistema, per validarne efficacia, utilità e desiderabilità presso aziende reali.
 
-<img src="../images/mvp.png" width="90%" alt="Prodotto a funzionalità minime" style="display: block; margin: auto;">
+<img src="../images/mvp3.png" width="90%" alt="Prodotto a funzionalità minime" style="display: block; margin: auto;">
 
 ---
 
