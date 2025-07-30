@@ -10,6 +10,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/random/random.h>
 #include <zephyr/drivers/lora.h>
+#include <stdio.h>
 
 #ifdef CONFIG_EMUL
 #include "sensirion_sht3xd_emul.h"
@@ -169,8 +170,8 @@ void lora_thread(void *arg1, void *arg2, void *arg3)
             float hf = sensor_value_to_double(&hum);
             float lf = sensor_value_to_double(&lux);
 
-            //snprintf(payload, sizeof(payload), "T:%.1f H:%.1f L:%.1f", (double)tf, (double)hf, (double)lf);
-            LOG_INF("T: %.1f H: %.1f L: %.1f", (double)tf, (double)hf, (double)lf);
+            snprintf(payload, sizeof(payload), "T:%.1f H:%.1f L:%.1f", (double)tf, (double)hf, (double)lf);
+            //LOG_INF("T: %.1f H: %.1f L: %.1f", (double)tf, (double)hf, (double)lf);
 
             int ret = sx1262_send(sx1262_dev, (uint8_t *)payload, strlen(payload));
             if (ret == 0) {
