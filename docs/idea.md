@@ -4,7 +4,7 @@
 Ti aiuta a osservare cosa accade nel vigneto in tempo reale, con dati affidabili e comprensibili.
 Ogni informazione raccolta è pensata per migliorare il lavoro quotidiano e facilitare le decisioni in campo.
 
-<img src="../images/idea2.png" width="80%" alt="Viticoltura di precisione" style="display: block; margin: auto;">
+<img src="../images/idea.png" width="80%" alt="Viticoltura di precisione" style="display: block; margin: auto;">
 
 ---
 
