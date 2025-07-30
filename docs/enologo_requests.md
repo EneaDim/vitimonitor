@@ -4,7 +4,7 @@
 Vitimonitor nasce dall’ascolto diretto di chi lavora ogni giorno per ottenere la massima qualità dal vigneto.
 Questa sezione raccoglie le esigenze pratiche di **enologi e agronomi di alto profilo**, con l’obiettivo di supportarli nella **gestione tecnica, microzonale e predittiva** della produzione.
 
-<img src="../images/enologi.png" width="90%" alt="Flusso dati" style="display: block; margin: auto;">
+<img src="../images/enologi.png" width="90%" alt="Enologi, Agronomi e Viticoltori" style="display: block; margin: auto;">
 
 ---
 
