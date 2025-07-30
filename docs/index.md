@@ -5,7 +5,7 @@ Un aiuto concreto per conoscere meglio la propria vigna, capire i segnali della 
 
 Che tu abbia un piccolo appezzamento o una grande azienda, Vitimonitor ti offre **strumenti semplici ma precisi** per ottimizzare il lavoro, migliorare la qualità dell’uva e ridurre gli sprechi.
 
-<img src="images/banner.png" width="100%" alt="Banner Vitimonitor" style="display: block; margin: auto;">
+<img src="images/banner2.png" width="100%" alt="Banner Vitimonitor" style="display: block; margin: auto;">
 
 ---
 
