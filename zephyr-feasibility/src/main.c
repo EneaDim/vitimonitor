@@ -112,7 +112,7 @@ void temp_thread(void *arg1, void *arg2, void *arg3)
 
             float tf = sensor_value_to_double(&temp);
             float hf = sensor_value_to_double(&hum);
-            LOG_INF("Temp: %.2f °C, Humidity: %.2f %%", tf, hf);
+            LOG_INF("Temp: %.2f °C, Humidity: %.2f %%", (double)tf, (double)hf);
         } else {
             LOG_WRN("Failed to fetch SHT3XD sample");
         }
@@ -143,7 +143,7 @@ void light_thread(void *arg1, void *arg2, void *arg3)
             sensor_channel_get(bh1750_dev, SENSOR_CHAN_LIGHT, &lux) == 0) {
 
             float lf = sensor_value_to_double(&lux);
-            LOG_INF("Light Intensity: %.2f lux", lf);
+            LOG_INF("Light Intensity: %.2f lux", (double)lf);
         } else {
             LOG_WRN("Failed to fetch BH1750 sample");
         }
@@ -169,7 +169,8 @@ void lora_thread(void *arg1, void *arg2, void *arg3)
             float hf = sensor_value_to_double(&hum);
             float lf = sensor_value_to_double(&lux);
 
-            snprintf(payload, sizeof(payload), "T:%.1f H:%.1f L:%.1f", tf, hf, lf);
+            //snprintf(payload, sizeof(payload), "T:%.1f H:%.1f L:%.1f", (double)tf, (double)hf, (double)lf);
+            LOG_INF("T: %.1f H: %.1f L: %.1f", (double)tf, (double)hf, (double)lf);
 
             int ret = sx1262_send(sx1262_dev, (uint8_t *)payload, strlen(payload));
             if (ret == 0) {

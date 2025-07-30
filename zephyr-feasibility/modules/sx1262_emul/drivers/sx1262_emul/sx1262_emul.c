@@ -132,7 +132,7 @@ static int sx1262_emul_io(const struct emul *emul,
     }
 
     if (rx_bufs && rx_bufs->count > 0) {
-        struct spi_buf *buf = &rx_bufs->buffers[0];
+        const struct spi_buf *buf = &rx_bufs->buffers[0];
         memset(buf->buf, 0x42, buf->len); // Dummy data per risposta SPI
         data->rx_len = buf->len;
 
