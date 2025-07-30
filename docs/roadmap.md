@@ -7,13 +7,14 @@
 **Vitimonitor** cresce in modo graduale, partendo dalle esigenze più immediate per arrivare, nel tempo, a offrire strumenti sempre più precisi.
 Ogni fase nasce da un confronto diretto con chi lavora in vigna, con l’obiettivo di migliorare la gestione agronomica senza complicazioni.
 
-<img src="../images/roadmap2.png" width="100%" alt="Roadmap progetto" style="display: block; margin: auto;">
-
 ---
 
 ## 🌱 Fase 1: Partire con semplicità
 
 **Obiettivo:** Avere subito un primo sguardo sullo stato del vigneto
+
+<img src="../images/fase1.png" width="100%" alt="Fase Iniziale" style="display: block; margin: auto;">
+
 
 ### Cosa puoi fare:
 - Installare i primi sensori in campo
@@ -29,6 +30,8 @@ Ogni fase nasce da un confronto diretto con chi lavora in vigna, con l’obietti
 ## 🌿 Fase 2: Osservare in modo più preciso
 
 **Obiettivo:** Conoscere meglio ogni zona del vigneto
+
+<img src="../images/fase2.png" width="100%" alt="Fase Intermedia" style="display: block; margin: auto;">
 
 ### Novità introdotte:
 - Misura dell’umidità del suolo a tre profondità (10, 30 e 60 cm)
@@ -48,6 +51,8 @@ Ogni fase nasce da un confronto diretto con chi lavora in vigna, con l’obietti
 ## 🌾 Fase 3: Supporto alle decisioni
 
 **Obiettivo:** Aiutarti a scegliere cosa fare e quando farlo
+
+<img src="../images/fase3.png" width="100%" alt="Fase Avanzata" style="display: block; margin: auto;">
 
 ### Cosa offre:
 - Suggerimenti su irrigazione, trattamenti e raccolta
