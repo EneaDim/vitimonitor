@@ -5634,6 +5634,16 @@
 	)
 	(wire
 		(pts
+			(xy 100.33 111.76) (xy 100.33 118.11)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "17dae71d-4c8c-4c26-b632-7278e8404ba0")
+	)
+	(wire
+		(pts
 			(xy 16.51 100.33) (xy 34.29 100.33)
 		)
 		(stroke
@@ -5764,6 +5774,16 @@
 	)
 	(wire
 		(pts
+			(xy 100.33 102.87) (xy 100.33 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "233e5f15-4955-428d-bec9-1d553c67a4e6")
+	)
+	(wire
+		(pts
 			(xy 102.87 158.75) (xy 107.95 158.75)
 		)
 		(stroke
@@ -5881,16 +5901,6 @@
 			(type default)
 		)
 		(uuid "326f1284-d47c-4c0f-9282-2f13c52d3a7c")
-	)
-	(wire
-		(pts
-			(xy 100.33 106.68) (xy 100.33 118.11)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "33af7190-2af7-4065-86ff-a476f18f7100")
 	)
 	(wire
 		(pts
@@ -6434,7 +6444,7 @@
 	)
 	(wire
 		(pts
-			(xy 90.17 87.63) (xy 90.17 101.6)
+			(xy 90.17 87.63) (xy 90.17 97.79)
 		)
 		(stroke
 			(width 0)
@@ -6864,7 +6874,7 @@
 	)
 	(wire
 		(pts
-			(xy 100.33 87.63) (xy 100.33 101.6)
+			(xy 100.33 87.63) (xy 100.33 97.79)
 		)
 		(stroke
 			(width 0)
@@ -7274,16 +7284,6 @@
 	)
 	(wire
 		(pts
-			(xy 90.17 106.68) (xy 90.17 120.65)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d70bdd75-f049-4bce-aa1d-76cfcc1fa8de")
-	)
-	(wire
-		(pts
 			(xy 64.77 181.61) (xy 68.58 181.61)
 		)
 		(stroke
@@ -7514,6 +7514,16 @@
 	)
 	(wire
 		(pts
+			(xy 90.17 111.76) (xy 90.17 120.65)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f76cd05c-3ed6-4a46-ab9d-61650320b991")
+	)
+	(wire
+		(pts
 			(xy 21.59 158.75) (xy 40.64 158.75)
 		)
 		(stroke
@@ -7541,6 +7551,16 @@
 			(type default)
 		)
 		(uuid "f8d1ee0b-ac38-485d-b7cc-50d3dee9ff32")
+	)
+	(wire
+		(pts
+			(xy 90.17 102.87) (xy 90.17 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fb807b7c-c5b9-4321-9a00-6f7c59c9b688")
 	)
 	(label "UART_RX"
 		(at 52.07 156.21 0)
@@ -11114,7 +11134,7 @@
 	)
 	(symbol
 		(lib_id "Device:LED_Small")
-		(at 100.33 104.14 90)
+		(at 100.33 100.33 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11122,7 +11142,7 @@
 		(dnp no)
 		(uuid "6c28756b-b7dd-40c5-96da-e4c0888cbd8f")
 		(property "Reference" "D8"
-			(at 102.362 102.616 90)
+			(at 102.362 98.806 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11131,7 +11151,7 @@
 			)
 		)
 		(property "Value" "ORANGE"
-			(at 102.108 105.918 90)
+			(at 102.108 102.108 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11140,7 +11160,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 100.33 104.14 90)
+			(at 100.33 100.33 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11149,7 +11169,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 100.33 104.14 90)
+			(at 100.33 100.33 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11158,7 +11178,7 @@
 			)
 		)
 		(property "Description" "Light emitting diode, small symbol"
-			(at 100.33 104.14 0)
+			(at 100.33 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11167,7 +11187,7 @@
 			)
 		)
 		(property "Sim.Pin" "1=K 2=A"
-			(at 100.33 104.14 0)
+			(at 100.33 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13559,7 +13579,7 @@
 	)
 	(symbol
 		(lib_id "Device:LED_Small")
-		(at 90.17 104.14 90)
+		(at 90.17 100.33 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -13567,7 +13587,7 @@
 		(dnp no)
 		(uuid "b754f23d-c210-4e55-a71d-77402c52bd72")
 		(property "Reference" "D7"
-			(at 92.202 102.616 90)
+			(at 92.202 98.806 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13576,7 +13596,7 @@
 			)
 		)
 		(property "Value" "GREEN"
-			(at 91.948 105.918 90)
+			(at 91.948 102.108 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13585,7 +13605,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 90.17 104.14 90)
+			(at 90.17 100.33 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13594,7 +13614,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 90.17 104.14 90)
+			(at 90.17 100.33 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13603,7 +13623,7 @@
 			)
 		)
 		(property "Description" "Light emitting diode, small symbol"
-			(at 90.17 104.14 0)
+			(at 90.17 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13612,7 +13632,7 @@
 			)
 		)
 		(property "Sim.Pin" "1=K 2=A"
-			(at 90.17 104.14 0)
+			(at 90.17 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14528,6 +14548,73 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R_Small")
+		(at 100.33 109.22 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ed126f05-6f72-4ad5-8a11-4611570fe26b")
+		(property "Reference" "R16"
+			(at 104.648 106.934 0)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+			)
+		)
+		(property "Value" "100k"
+			(at 104.14 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 100.33 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 100.33 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 100.33 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "1320f408-1aec-472b-b512-02923538c0b9")
+		)
+		(pin "1"
+			(uuid "cbfe2148-5f6f-4bf7-a9d8-236ba464ad6d")
+		)
+		(instances
+			(project "vitimonitor_sensor"
+				(path "/8365193e-4878-4a04-b89a-a51695e2c71c"
+					(reference "R16")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Diode:ESD9B3.3ST5G")
 		(at 68.58 186.69 90)
 		(unit 1)
@@ -14724,6 +14811,73 @@
 			(project "vitimonitor_sensor"
 				(path "/8365193e-4878-4a04-b89a-a51695e2c71c"
 					(reference "R3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small")
+		(at 90.17 109.22 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f255f44a-082a-406b-976d-5bb41e93b5da")
+		(property "Reference" "R15"
+			(at 93.726 107.188 0)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+			)
+		)
+		(property "Value" "100k"
+			(at 93.98 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 90.17 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 90.17 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 90.17 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "3f4462aa-b9e6-4136-ba60-aa4290850b9a")
+		)
+		(pin "1"
+			(uuid "79f19e7b-21cf-4262-8416-3e1e56375a00")
+		)
+		(instances
+			(project "vitimonitor_sensor"
+				(path "/8365193e-4878-4a04-b89a-a51695e2c71c"
+					(reference "R15")
 					(unit 1)
 				)
 			)
