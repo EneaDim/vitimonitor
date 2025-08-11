@@ -5494,16 +5494,6 @@
 	)
 	(polyline
 		(pts
-			(xy 110.49 76.2) (xy 110.49 168.91)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0a042dfb-65da-4250-9d07-f5247405fb0d")
-	)
-	(polyline
-		(pts
 			(xy 214.63 85.09) (xy 285.75 85.09)
 		)
 		(stroke
@@ -5554,17 +5544,7 @@
 	)
 	(polyline
 		(pts
-			(xy 110.49 168.91) (xy 110.49 196.85)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "111b6a1f-8e00-4b5a-a7ca-c86001c87c4e")
-	)
-	(polyline
-		(pts
-			(xy 12.7 168.91) (xy 110.49 168.91)
+			(xy 12.7 168.91) (xy 176.53 168.91)
 		)
 		(stroke
 			(width 0)
@@ -5604,7 +5584,7 @@
 	)
 	(wire
 		(pts
-			(xy 204.47 27.94) (xy 204.47 29.21)
+			(xy 205.74 27.94) (xy 205.74 29.21)
 		)
 		(stroke
 			(width 0)
@@ -5674,7 +5654,7 @@
 	)
 	(wire
 		(pts
-			(xy 204.47 21.59) (xy 204.47 22.86)
+			(xy 205.74 21.59) (xy 205.74 22.86)
 		)
 		(stroke
 			(width 0)
@@ -6224,7 +6204,7 @@
 	)
 	(wire
 		(pts
-			(xy 204.47 34.29) (xy 204.47 35.56)
+			(xy 205.74 34.29) (xy 205.74 35.56)
 		)
 		(stroke
 			(width 0)
@@ -6504,7 +6484,7 @@
 	)
 	(polyline
 		(pts
-			(xy 199.39 12.7) (xy 199.39 41.91)
+			(xy 200.66 12.7) (xy 200.66 41.91)
 		)
 		(stroke
 			(width 0)
@@ -6781,6 +6761,16 @@
 			(type default)
 		)
 		(uuid "a3ad488a-3e98-4c33-b4ab-a4c31927342f")
+	)
+	(polyline
+		(pts
+			(xy 110.49 76.2) (xy 110.49 168.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a4845b7b-4128-4aa5-82e9-a03bd0d0c480")
 	)
 	(wire
 		(pts
@@ -8729,7 +8719,7 @@
 	)
 	(symbol
 		(lib_id "Device:LED_Small")
-		(at 204.47 31.75 90)
+		(at 205.74 31.75 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8737,7 +8727,7 @@
 		(dnp no)
 		(uuid "1cb83e56-20a2-41e4-aa76-349edf968a32")
 		(property "Reference" "D2"
-			(at 206.502 30.226 90)
+			(at 207.772 30.226 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8746,7 +8736,7 @@
 			)
 		)
 		(property "Value" "GREEN"
-			(at 206.248 33.528 90)
+			(at 207.01 33.782 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8755,7 +8745,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 204.47 31.75 90)
+			(at 205.74 31.75 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8764,7 +8754,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 204.47 31.75 90)
+			(at 205.74 31.75 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8773,7 +8763,7 @@
 			)
 		)
 		(property "Description" "Light emitting diode, small symbol"
-			(at 204.47 31.75 0)
+			(at 205.74 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8782,7 +8772,7 @@
 			)
 		)
 		(property "Sim.Pin" "1=K 2=A"
-			(at 204.47 31.75 0)
+			(at 205.74 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9382,7 +9372,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 204.47 35.56 0)
+		(at 205.74 35.56 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9390,7 +9380,7 @@
 		(dnp no)
 		(uuid "39911fd8-ce56-4920-ab34-65da5624d2da")
 		(property "Reference" "#PWR013"
-			(at 204.47 41.91 0)
+			(at 205.74 41.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9399,7 +9389,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 204.47 39.624 0)
+			(at 205.74 39.624 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9407,7 +9397,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 204.47 35.56 0)
+			(at 205.74 35.56 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9416,7 +9406,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 204.47 35.56 0)
+			(at 205.74 35.56 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9425,7 +9415,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 204.47 35.56 0)
+			(at 205.74 35.56 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12716,7 +12706,7 @@
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 204.47 21.59 0)
+		(at 205.74 21.59 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -12724,7 +12714,7 @@
 		(dnp no)
 		(uuid "9789fabb-2465-4956-b99d-0fb61fe9a45f")
 		(property "Reference" "#PWR012"
-			(at 204.47 25.4 0)
+			(at 205.74 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12733,7 +12723,7 @@
 			)
 		)
 		(property "Value" "+3.3V"
-			(at 204.47 17.526 0)
+			(at 205.74 17.526 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12741,7 +12731,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 204.47 21.59 0)
+			(at 205.74 21.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12750,7 +12740,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 204.47 21.59 0)
+			(at 205.74 21.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12759,7 +12749,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
-			(at 204.47 21.59 0)
+			(at 205.74 21.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14564,7 +14554,7 @@
 				)
 			)
 		)
-		(property "Value" "100k"
+		(property "Value" "10k"
 			(at 104.14 109.22 0)
 			(effects
 				(font
@@ -14751,7 +14741,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small")
-		(at 204.47 25.4 0)
+		(at 205.74 25.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -14759,7 +14749,7 @@
 		(dnp no)
 		(uuid "f24a4e0a-e880-4449-b94f-ba6eeae2a348")
 		(property "Reference" "R3"
-			(at 207.518 23.876 0)
+			(at 208.788 23.876 0)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -14767,7 +14757,7 @@
 			)
 		)
 		(property "Value" "1k"
-			(at 208.026 27.432 0)
+			(at 209.296 27.432 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14775,7 +14765,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 204.47 25.4 0)
+			(at 205.74 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14784,7 +14774,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 204.47 25.4 0)
+			(at 205.74 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14793,7 +14783,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 204.47 25.4 0)
+			(at 205.74 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14833,7 +14823,7 @@
 				)
 			)
 		)
-		(property "Value" "100k"
+		(property "Value" "10k"
 			(at 93.98 109.22 0)
 			(effects
 				(font
