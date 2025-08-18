@@ -639,7 +639,7 @@ def main():
     parser.add_argument("-m", "--module_name", required=True, help="Name of the module, e.g., sensirion_sht3xd_emul")
     parser.add_argument("-i", "--interface", required=True, help="Interface type, e.g., i2c, spi")
     parser.add_argument("-a", "--address", required=True, help="Address at interface node")
-    parser.add_argument("-c", "--category", default="sensor", help="Interface type, e.g., i2c, spi")
+    parser.add_argument("-c", "--category", default="sensor", help="Driver type, e.g., sensor")
     parser.add_argument("-o", "--output", default=".", help="Base output directory (default current directory)")
 
     args = parser.parse_args()
