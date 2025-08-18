@@ -33,7 +33,7 @@ LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 #define LED_BLINK_INTERVAL_MS   500
 #define TEMP_INTERVAL_MS       1000
 #define LIGHT_INTERVAL_MS      1000
-#define LORA_INTERVAL_MS  5000
+#define LORA_INTERVAL_MS       5000
 
 // -----------------------------------------------------------------------------
 // LED GPIO configuration
@@ -47,10 +47,6 @@ static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 #define SHT3XD_NODE DT_NODELABEL(sht3xd)
 static const struct device *sht3xd_dev = DEVICE_DT_GET(SHT3XD_NODE);
 
-#ifdef CONFIG_EMUL
-static const struct emul *sht3xd_emul = EMUL_DT_GET(SHT3XD_NODE);
-#endif
-
 // -----------------------------------------------------------------------------
 // BH1750 (light intensity) sensor configuration
 
@@ -58,18 +54,10 @@ static const struct emul *sht3xd_emul = EMUL_DT_GET(SHT3XD_NODE);
 static const struct device *bh1750_dev = DEVICE_DT_GET(BH1750_NODE);
 static const struct i2c_dt_spec bh1750_spec = I2C_DT_SPEC_GET(BH1750_NODE);
 
-#ifdef CONFIG_EMUL
-static const struct emul *bh1750_emul = EMUL_DT_GET(BH1750_NODE);
-#endif
-
 // -----------------------------------------------------------------------------
 // LoRa driver
 #define SX1262_NODE DT_NODELABEL(sx1262)
 static const struct device *sx1262_dev = DEVICE_DT_GET(SX1262_NODE);
-
-#ifdef CONFIG_EMUL
-static const struct emul *sx1262_emul = EMUL_DT_GET(SX1262_NODE);
-#endif
 
 // -----------------------------------------------------------------------------
 // Thread stacks and control blocks
@@ -183,7 +171,7 @@ void lora_thread(void *arg1, void *arg2, void *arg3)
             LOG_WRN("Sensor read failed");
         }
 
-        k_msleep(5000);  // invia ogni 5 secondi
+        k_msleep(LORA_INTERVAL_MS);  // invia ogni 5 secondi
     }
 }
 
@@ -214,22 +202,6 @@ int main(void)
         LOG_ERR("SX1262 not ready");
         return 0;
     }
-
-#ifdef CONFIG_EMUL
-    if (!device_is_ready(sht3xd_emul->dev)) {
-        LOG_ERR("SHT3XD emulator not ready");
-        return 0;
-    }
-
-    if (!device_is_ready(bh1750_emul->dev)) {
-        LOG_ERR("BH1750 emulator not ready");
-        return 0;
-    }
-    if (!device_is_ready(sx1262_emul->dev)) {
-        LOG_ERR("SX1262 emulator not ready");
-        return 0;
-    }
-#endif
 
     // Configure LED pin
     if (gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE) < 0) {
