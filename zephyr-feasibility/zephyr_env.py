@@ -78,17 +78,17 @@ CONFIG_GPIO=y
 CONFIG_GPIO_EMUL=y
 
 # Random
-#CONFIG_STACK_POINTER_RANDOM=0
-#CONFIG_TEST_RANDOM_GENERATOR=y
-#CONFIG_TIMER_RANDOM_GENERATOR=y
-#CONFIG_TEST_CSPRNG_GENERATOR=y
+CONFIG_STACK_POINTER_RANDOM=0
+CONFIG_TEST_RANDOM_GENERATOR=y
+CONFIG_TIMER_RANDOM_GENERATOR=y
+CONFIG_TEST_CSPRNG_GENERATOR=y
+
+# Print Float
+CONFIG_CBPRINTF_FP_SUPPORT=y
 
 # General logging
 CONFIG_LOG=y
 #CONFIG_LOG_DEFAULT_LEVEL=4
-
-# Print Float
-#CONFIG_CBPRINTF_FP_SUPPORT=y
 """
     write_file(os.path.join(output_folder, "prj.conf"), prj_conf_content, overwrite)
 
@@ -155,13 +155,21 @@ qemu-system-xtensa -nographic -machine esp32s3 -drive file=build/zephyr/zephyr_4
     write_file(os.path.join(output_folder, "utils/qemu_esp32.sh"), qemu_content, overwrite)
 
     # Makefile
-    makefile_content = f"""BOARD   ?= {board}
+    makefile_content = f"""\
+DRIVER  ?= sensirion_sht3xd_emul
+ITF     ?= i2c
+ADD     ?= 44
+
+BOARD   ?= {board}
 OVERLAY ?= {overlay}
 
 ORANGE  :=\\033[38;5;214m
 RESET   :=\\033[0m
 
 all: config build run
+
+add-driver:
+\tpython ../scripts/zephyr_driver_emul.py -m $(DRIVER) -i $(ITF) -a $(ADD) -o ../modules
 
 config:
 \tcmake -S . -B build -DBOARD=$(BOARD) -DDTC_OVERLAY_FILE=boards/$(OVERLAY).overlay
@@ -205,7 +213,6 @@ help:
     src_dir = os.path.join(output_folder, "src")
     os.makedirs(src_dir, exist_ok=True)
     main_c_content = """\
-// -----------------------------------------------------------------------------
 // Kernel and driver includes
 
 #include <zephyr/kernel.h>
@@ -216,26 +223,22 @@ help:
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
-// -----------------------------------------------------------------------------
 // Constants and thread configuration
 
 #define STACK_SIZE 1024
 #define LED_PRIORITY 5
 #define LED_BLINK_INTERVAL_MS 500
 
-// -----------------------------------------------------------------------------
 // LED GPIO configuration
 
 #define LED0_NODE DT_NODELABEL(led0)
 static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
-// -----------------------------------------------------------------------------
 // Thread stack and control block
 
 K_THREAD_STACK_DEFINE(led_stack, STACK_SIZE);
 static struct k_thread led_thread_data;
 
-// -----------------------------------------------------------------------------
 // LED Thread
 
 void led_thread(void *arg1, void *arg2, void *arg3)
@@ -250,7 +253,6 @@ void led_thread(void *arg1, void *arg2, void *arg3)
     }
 }
 
-// -----------------------------------------------------------------------------
 // Main Function
 
 int main(void)
