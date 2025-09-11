@@ -411,6 +411,22 @@
     [
       "8365193e-4878-4a04-b89a-a51695e2c71c",
       "Root"
+    ],
+    [
+      "9a7f3635-4db7-45aa-a2bf-e4883e571220",
+      "power blocks"
+    ],
+    [
+      "3e771e37-b7bf-4853-b370-463619d49ec3",
+      "esp32"
+    ],
+    [
+      "3fc22b33-d4c4-4e12-9efa-cf4faf92b9e4",
+      "connectors"
+    ],
+    [
+      "b14297a1-b417-48ed-bdc7-70b9ab46f2c8",
+      "user_itf"
     ]
   ],
   "text_variables": {}
