@@ -427,6 +427,10 @@
     [
       "b14297a1-b417-48ed-bdc7-70b9ab46f2c8",
       "user_itf"
+    ],
+    [
+      "b58b1cc6-06e1-4bc3-8fd1-cd0c9c5d3b66",
+      "Sensors"
     ]
   ],
   "text_variables": {}
