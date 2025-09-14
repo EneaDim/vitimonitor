@@ -2,7 +2,7 @@
 	(version 20250114)
 	(generator "eeschema")
 	(generator_version "9.0")
-	(uuid "7e65ed76-3da8-41c8-965b-9fa388164f59")
+	(uuid "a537a9a7-ee57-4a6d-a370-be6352c1219e")
 	(paper "A4")
 	(lib_symbols
 		(symbol "BH1750FVI-TR:BH1750FVI-TR"
@@ -1546,22 +1546,22 @@
 			)
 		)
 		(pin "3"
-			(uuid "257aef0e-6c9b-41ec-8032-fc63abd49ac5")
+			(uuid "0a02f03b-e3a7-412f-873e-ca71f0125244")
 		)
 		(pin "4"
-			(uuid "1f3e7159-5fd9-4366-9bcf-9c55e1003e19")
+			(uuid "fd1eb229-0629-4e0d-ae42-a9bac7fb8388")
 		)
 		(pin "6"
-			(uuid "993d3405-10d0-4a8a-a951-769122834baa")
+			(uuid "97ba2f64-4425-44d2-96dc-8879429ec3e8")
 		)
 		(pin "2"
-			(uuid "6a268388-f3f9-4471-85c1-1a14566463fa")
+			(uuid "4b6fdb4c-9700-4b84-ae1d-ea33ce0c1f97")
 		)
 		(pin "1"
-			(uuid "df0bac47-b6ba-4824-b6ba-a5b738deee71")
+			(uuid "53a4ee61-330c-4c15-adf6-01d846591da7")
 		)
 		(pin "5"
-			(uuid "fcea1e6b-4006-4943-8b03-3bfefd48214c")
+			(uuid "90c7d824-b159-41a9-bf73-f13062dcd513")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -1626,7 +1626,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "50cf8e1b-2026-4289-a50f-0275652e72d8")
+			(uuid "01c15cab-5ed6-4083-b2cd-9f4610d0fdb3")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -1691,7 +1691,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "305ca6b3-7c3a-4dcf-8465-fc4f6181dba1")
+			(uuid "7b59aefa-64a9-4b6f-bb01-8f0732b93e7e")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -1756,7 +1756,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "41f394ad-c39a-4a28-851f-716914bfd392")
+			(uuid "42141eae-38a6-48e6-bb1d-a3b0c5bc0ad6")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -1820,10 +1820,10 @@
 			)
 		)
 		(pin "2"
-			(uuid "62d5a39a-70dd-472c-9d10-b196670e4fe2")
+			(uuid "2cc70952-a0ff-4a89-b95a-f0f9e64793e8")
 		)
 		(pin "1"
-			(uuid "b0755f8d-092e-4cc2-b209-f8964ddbe46f")
+			(uuid "dabbfd3e-1077-46b0-901e-eada530542f5")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -1888,7 +1888,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "fec7cd85-8556-4f13-9988-003dd4fb6ef1")
+			(uuid "6819d066-d47b-43ae-9031-bd46985611ae")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -1953,7 +1953,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "6f2fa13c-a21f-431d-890c-74ef7da4a46e")
+			(uuid "71a5f87e-932a-4c2d-ad81-a1e55cb376d3")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -2018,7 +2018,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "ecb1791f-7caf-4729-9e6b-2e2e0afb9662")
+			(uuid "abf98ca8-c2db-4603-89f3-5872244dfe73")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -2085,31 +2085,31 @@
 			)
 		)
 		(pin "1"
-			(uuid "2a4a7a07-2e94-4d12-b15e-ac9592d3113b")
+			(uuid "1831060c-58bb-4992-8fb0-99a5888849e6")
 		)
 		(pin "4"
-			(uuid "4b200fa1-7bed-493a-beeb-56f124f3a5aa")
+			(uuid "ffe2378f-8398-458c-a199-8b2c9fabb5dd")
 		)
 		(pin "8"
-			(uuid "1f5f08fc-0400-46ea-a038-5b0ecd2141fe")
+			(uuid "d3f92538-b61f-45ee-af0d-fe2c5464e8f7")
 		)
 		(pin "6"
-			(uuid "f24742f5-c4e9-495f-8c24-2d66c79ceaac")
+			(uuid "717db9e1-5e80-4b2b-8187-af6a57ff6ba6")
 		)
 		(pin "2"
-			(uuid "bbe02fee-d87b-406a-b2d4-f3c1be560bda")
+			(uuid "8de1ca7b-8514-4c70-82ec-941e645a49e3")
 		)
 		(pin "7"
-			(uuid "47313548-c74a-479b-9293-f9fbd6345640")
+			(uuid "7d24e1d4-7378-4e1a-bb64-c4dc6b89fbec")
 		)
 		(pin "9"
-			(uuid "ba00c592-c7a0-4781-a087-b970c45834f7")
+			(uuid "ba7a6f1e-06c2-460c-983b-dd0d9d2cd604")
 		)
 		(pin "5"
-			(uuid "47e9d6d6-8a9a-4a36-9ed4-435ad58d6a21")
+			(uuid "3265bda3-23f2-4a57-a394-106a86e38b89")
 		)
 		(pin "3"
-			(uuid "ccc847a5-1d8f-4e3e-8106-0cc387feb282")
+			(uuid "e29f8d60-813b-43c8-b49e-6495f1228a72")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -2174,7 +2174,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "77069da5-3409-4d27-bb91-28555d3ae8df")
+			(uuid "83338d8c-a365-4e1b-b65b-857c6a543e23")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -2241,10 +2241,10 @@
 			)
 		)
 		(pin "2"
-			(uuid "3fe859ec-ac0e-422f-9c7c-9289aac71eab")
+			(uuid "5e93bc4c-2aea-4dec-826f-810377225c34")
 		)
 		(pin "1"
-			(uuid "cf8e24ed-1143-4297-a93a-3b5ca46afa9f")
+			(uuid "b9651276-007f-4574-86f8-7dc862348718")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -2309,7 +2309,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "bb45ef4f-f508-4f22-8298-d3cfbeb8f60a")
+			(uuid "7298e82e-4a7d-47d2-af35-93a13d710bea")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -2374,7 +2374,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "259fff24-43f0-4c62-893e-629746026c62")
+			(uuid "384943f7-02ec-48f6-8933-5c125868dc82")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -2439,7 +2439,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "2fcddabd-67f7-42d2-9869-a59d01850196")
+			(uuid "bdf865ab-47bc-4336-a133-e02c346099bc")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -2504,7 +2504,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "1e4f0940-3184-4c9d-b4e7-bb4826a19e3f")
+			(uuid "0b1e7a65-842d-4358-b99f-e3a54da74282")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -2569,7 +2569,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "c60a57df-10e1-4087-8033-c4bbddd676a5")
+			(uuid "896e1fef-92ea-442d-a828-6131ea634e31")
 		)
 		(instances
 			(project "vitimonitor_sensor"
@@ -2636,10 +2636,10 @@
 			)
 		)
 		(pin "2"
-			(uuid "ac2d9888-ffdb-4b26-8596-db74b265a55a")
+			(uuid "70159ffe-1280-426d-a5ad-50b9080de586")
 		)
 		(pin "1"
-			(uuid "09406995-1b7b-484c-a207-c5380b2d5362")
+			(uuid "90afb582-762e-4ca9-a1ae-0ec4519b6f2e")
 		)
 		(instances
 			(project "vitimonitor_sensor"
